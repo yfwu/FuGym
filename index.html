@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>FuGym 健身記錄</title>
+<style>
+/* FuLab 10-Color System (from guideline) */
+:root {
+  /* Core */
+  --paper: #FFFFFF;
+  --silver: #D8DEE9;
+  --graphite: #2E3440;
+  --teal: #5EBCBF;      /* primary */
+  --indigo: #81A1C1;    /* info */
+  --emerald: #A3BE8C;   /* success */
+  --amber: #EBCB8B;     /* warning */
+  --coral: #D08770;     /* danger */
+  --plum: #B48EAD;      /* alt/selection */
+  --slate: #708090;     /* neutral strong */
+  /* Tints (on white) */
+  --teal-50: rgba(94, 188, 191, 0.12);
+  --indigo-50: rgba(129, 161, 193, 0.15);
+  --emerald-50: rgba(163, 190, 140, 0.18);
+  --amber-50: rgba(235, 203, 139, 0.18);
+  --coral-50: rgba(208, 135, 112, 0.18);
+  --plum-50: rgba(180, 142, 173, 0.18);
+  --slate-50: rgba(112, 128, 144, 0.14);
+  /* Layout tokens */
+  --pad: 12px;
+  --radius: 16px; /* rounded-xl2 per guideline */
+  --gap: 10px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial;
+}
+html, body { margin: 0; padding: 0; background: var(--paper); color: var(--graphite); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+
+/* Header */
+header { position: sticky; top: 0; background: var(--paper); border-bottom: 1px solid var(--silver); padding: 14px env(safe-area-inset-right) 10px env(safe-area-inset-left); z-index: 10; }
+h1 { margin: 0; font-size: 18px; }
+.sub { font-size: 12px; color: var(--slate); margin-top: 4px; }
+
+/* Layout helpers */
+main { padding: 12px; }
+.row { display: flex; gap: var(--gap); align-items: center; flex-wrap: wrap; }
+.stack { display: flex; flex-direction: column; gap: var(--gap); }
+.grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+@media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+
+button, input, select, textarea { font: inherit; }
+
+/* Cards / Surfaces (neumorphism-lite) */
+.card { background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); padding: var(--pad); box-shadow: 6px 6px 14px #cfd8e6, -6px -6px 14px #ffffff; }
+.card:active { box-shadow: inset 6px 6px 12px #cfd8e6, inset -6px -6px 12px #ffffff; }
+
+/* Buttons */
+.btn { border: 1px solid var(--silver); background: var(--paper); color: var(--graphite); border-radius: 12px; padding: 12px 16px; min-height: 44px; font-size: 16px; cursor: pointer; }
+.btn:active { transform: scale(.98); box-shadow: inset 6px 6px 12px #cfd8e6, inset -6px -6px 12px #ffffff; }
+.btn.primary { background: var(--teal); color: #fff; border-color: var(--teal); }
+.btn.secondary { background: var(--paper); border-color: var(--silver); }
+.btn.info { background: var(--indigo); color: #fff; border-color: var(--indigo); }
+.btn.danger { background: var(--paper); border-color: var(--coral); color: var(--coral); }
+.btn.ghost { background: var(--paper); border-style: dashed; border-color: var(--silver); color: var(--graphite); }
+
+/* Sticky toolbar */
+.toolbar { position: sticky; bottom: 0; background: var(--paper); border-top: 1px solid var(--silver); padding: 10px env(safe-area-inset-right) calc(10px + env(safe-area-inset-bottom)) env(safe-area-inset-left); display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+/* Exercise card */
+.exercise { background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); padding: var(--pad); }
+.ex-header { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.ex-title { flex: 1; display: flex; gap: 8px; align-items: center; min-width: 200px; }
+.ex-title input { flex: 1; border: none; border-bottom: 1px dashed var(--silver); padding: 6px 4px; font-weight: 600; min-width: 120px; font-size: 16px; }
+
+.chip { font-size: 12px; color: var(--graphite); background: var(--teal-50); border: 1px solid var(--silver); padding: 4px 8px; border-radius: 999px; }
+.badge-info { background: var(--indigo-50); }
+
+/* Table */
+table { width: 100%; border-collapse: separate; border-spacing: 0 8px; table-layout: fixed; }
+th, td { font-size: 16px; text-align: left; padding: 4px 0; }
+th { color: var(--slate); font-weight: 600; }
+th:nth-child(1), td:nth-child(1) { width: 40%; } /* 重量 */
+th:nth-child(2), td:nth-child(2) { width: 40%; } /* 次數 */
+th:nth-child(3), td:nth-child(3) { width: 20%; text-align: right; } /* 操作 */
+
+/* Row left stripe per guideline (3–4px) */
+tbody tr { position: relative; }
+tbody tr::before { content: ""; position: absolute; left: -6px; top: 6px; bottom: 6px; width: 4px; border-radius: 3px; background: var(--indigo); opacity: .7; }
+
+/* Inputs cells */
+td.cell { background: var(--slate-50); border: 1px solid var(--silver); border-radius: 12px; padding: 10px; }
+input.small { width: 100%; box-sizing: border-box; border: none; background: transparent; outline: none; color: var(--graphite); font-size: 16px; }
+
+.set-actions { display: flex; justify-content: flex-end; }
+.muted { color: var(--slate); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+/* Focus style: 2px tint outline + 1px inner silver for clarity */
+input:focus, button:focus, textarea:focus { outline: 2px solid var(--teal-50); box-shadow: 0 0 0 1px var(--silver) inset; border-radius: 8px; }
+
+/* Responsive date input color inheritance */
+header input[type="date"] { border: none; border-bottom: 1px dashed var(--silver); background: transparent; color: var(--graphite); padding: 2px 4px; font-size: 16px; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="row" style="justify-content: space-between; align-items: center;">
+      <h1>FuGym 健身記錄</h1>
+      <input id="date" type="date" />
+    </div>
+  </header>
+
+  <main id="app" class="stack">
+    <section class="grid" id="exercises"></section>
+  </main>
+
+  <div class="toolbar">
+    <button class="btn primary" id="addExercise">新增項目</button>
+    <button class="btn danger" id="clearAll">清空本次</button>
+    <button class="btn info" id="exportBtn">匯出並複製</button>
+    <button class="btn secondary" id="shareCsv">分享</button>
+  </div>
+
+  <!-- Hidden CSV output for export -->
+  <textarea id="csvOut" style="display: none;"></textarea>
+
+<script>
+// Lightweight, dependency-free gym logger
+// - Matches FuLab 10-color design tokens
+// - Mobile-friendly, persistent localStorage, Web Share API
+// - Exports compact CSV grouped by exercise + weight (sum reps, count sets)
+
+const $ = (sel, root=document) => root.querySelector(sel);
+const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+const STORAGE_KEY = "gymlogger.fulab.v2";
+const defaultExercises = [];
+
+const state = { date: todayISO(), exercises: [] };
+
+function todayISO(){
+  const d = new Date();
+  const tz = new Date(d.getTime() - d.getTimezoneOffset()*60000);
+  return tz.toISOString().slice(0,10);
+}
+function uid(){ return Math.random().toString(36).slice(2,10); }
+
+function save(){ state.date = $("#date").value; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+function load(){ const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return; try{ Object.assign(state, JSON.parse(raw)); } catch(e){} }
+function setDateInput(){ $("#date").value = state.date || todayISO(); }
+
+function addExercise(name="未命名項目"){ state.exercises.push({ id: uid(), name, sets: [] }); render(); save(); }
+function removeExercise(id){ state.exercises = state.exercises.filter(e=>e.id!==id); render(); save(); }
+function addSet(exId, w="", r=""){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.sets.push({ id: uid(), w: String(w), r: String(r) }); render(); save(); }
+function removeSet(exId, setId){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.sets = ex.sets.filter(s=>s.id!==setId); render(); save(); }
+function updateExerciseName(exId, name){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.name = name.trim() || "未命名項目"; save(); }
+function updateSetField(exId, setId, field, value){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; const s = ex.sets.find(s=>s.id===setId); if(!s) return; s[field] = value.replace(/[^\d.]/g, ""); save(); }
+
+function exportCSV(){
+  const date = $("#date").value || state.date || todayISO();
+  const lines = ["date,exercise,weight_kg,total_reps,sets"]; // header
+  for(const ex of state.exercises){
+    const map = new Map();
+    for(const s of ex.sets){
+      const w = s.w || "0";
+      const r = parseInt(s.r||"0", 10) || 0;
+      if(!map.has(w)) map.set(w, { reps:0, sets:0 });
+      map.get(w).reps += r; map.get(w).sets += 1;
+    }
+    const sorted = [...map.entries()].sort((a,b)=>parseFloat(a[0]||0)-parseFloat(b[0]||0));
+    for(const [w, agg] of sorted){
+      if(agg.sets===0) continue;
+      lines.push([date, csvSafe(ex.name), w, agg.reps, agg.sets].join(","));
+    }
+  }
+  const out = lines.join("\n");
+  $("#csvOut").value = out;
+  return out;
+}
+
+function csvSafe(text){ const t = String(text ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; }
+function clearAll(){ if(confirm("清空本次所有資料？此動作不可還原。")){ state.exercises = []; $("#csvOut").value = ""; render(); save(); } }
+function copyCsv(){ const txt = $("#csvOut").value; if(!txt){ alert("沒有可複製的資料，請先匯出。"); return; } navigator.clipboard.writeText(txt).then(()=>alert("已複製到剪貼簿"),()=>alert("複製失敗，請手動選取文字")); }
+async function shareCsv(){ const txt = $("#csvOut").value || exportCSV(); const filename = `gym_${state.date||todayISO()}.csv`; try{ if(navigator.canShare && window.Blob){ const file = new File([txt], filename, { type: "text/csv" }); await navigator.share({ title: "FuGym 健身記錄", text: "本次訓練 CSV", files: [file] }); } else if (navigator.share) { await navigator.share({ title: "FuGym 健身記錄", text: txt }); } }catch(e){ /* user canceled or unsupported */ } }
+
+function render(){
+  setDateInput();
+  const wrap = $("#exercises"); wrap.innerHTML = "";
+  for(const ex of state.exercises){
+    const card = document.createElement("section");
+    card.className = "exercise stack";
+    card.innerHTML = `
+      <div class="ex-header">
+        <div class="ex-title">
+          <span class="chip">項目</span>
+          <input type="text" value="${escapeHtml(ex.name)}" placeholder="例如：深蹲" aria-label="項目名稱" />
+        </div>
+        <div class="row">
+          <button class="btn secondary" data-add="+">+ 組</button>
+          <button class="btn danger" data-del="ex">刪除項目</button>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>重量</th>
+            <th>次數</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    `;
+    // Handlers
+    $("input", card).addEventListener("input", (e)=> updateExerciseName(ex.id, e.target.value));
+    $('[data-add="+"]', card).addEventListener("click", ()=> addSet(ex.id, "", ""));
+    $('[data-del="ex"]', card).addEventListener("click", ()=> removeExercise(ex.id));
+
+    const tbody = $("tbody", card);
+    for(const s of ex.sets){
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td class="cell"><input class="small mono" inputmode="decimal" pattern="[0-9.]*" placeholder="例如 60" value="${s.w ?? ""}" aria-label="重量" /></td>
+        <td class="cell"><input class="small mono" inputmode="numeric" pattern="[0-9]*" placeholder="例如 8" value="${s.r ?? ""}" aria-label="次數" /></td>
+        <td class="set-actions"><button class="btn danger" data-del="set">刪除</button></td>
+      `;
+      const [wInput, rInput] = $$('input', tr);
+      wInput.addEventListener('input', (e)=> updateSetField(ex.id, s.id, 'w', e.target.value));
+      rInput.addEventListener('input', (e)=> updateSetField(ex.id, s.id, 'r', e.target.value));
+      $('[data-del="set"]', tr).addEventListener('click', ()=> removeSet(ex.id, s.id));
+      tbody.appendChild(tr);
+    }
+
+    wrap.appendChild(card);
+  }
+}
+
+function escapeHtml(s=""){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+// Boot
+load();
+if(state.exercises.length === 0){
+  for(const name of defaultExercises) addExercise(name);
+}
+setDateInput();
+render();
+
+// Global handlers
+$("#date").addEventListener("change", save);
+$("#addExercise").addEventListener("click", ()=> addExercise());
+$("#clearAll").addEventListener("click", clearAll);
+$("#exportBtn").addEventListener("click", ()=> {
+  const csv = exportCSV();
+  if (csv) {
+    navigator.clipboard.writeText(csv).then(
+      () => alert("CSV 已匯出並複製到剪貼簿！"),
+      () => alert("複製失敗，請手動選取文字")
+    );
+  }
+});
+$("#shareCsv").addEventListener("click", shareCsv);
+
+// Quick UX: Enter on reps adds a new set
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' && e.target.matches('input[aria-label="次數"]')){
+    const card = e.target.closest('.exercise');
+    const idx = $$('.exercise').indexOf(card);
+    const ex = state.exercises[idx];
+    if(ex) addSet(ex.id, '', '');
+  }
+});
+</script>
+</body>
+</html>
