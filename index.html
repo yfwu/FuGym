@@ -73,23 +73,20 @@ button, input, select, textarea { font: inherit; }
 .chip { font-size: 12px; color: var(--graphite); background: var(--teal-50); border: 1px solid var(--silver); padding: 4px 8px; border-radius: 999px; }
 .badge-info { background: var(--indigo-50); }
 
-/* Table */
-table { width: 100%; border-collapse: separate; border-spacing: 0 8px; table-layout: fixed; }
-th, td { font-size: 16px; text-align: left; padding: 4px 0; }
-th { color: var(--slate); font-weight: 600; }
-th:nth-child(1), td:nth-child(1) { width: 40%; } /* 重量 */
-th:nth-child(2), td:nth-child(2) { width: 40%; } /* 次數 */
-th:nth-child(3), td:nth-child(3) { width: 20%; text-align: right; } /* 操作 */
+/* Set list */
+.set-list { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; }
+.set-row { position: relative; display: grid; grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) auto; gap: 12px; align-items: end; padding: 16px 16px 16px 28px; background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); box-shadow: 3px 3px 6px rgba(207, 216, 230, 0.4); }
+.set-row::before { content: ""; position: absolute; left: 12px; top: 12px; bottom: 12px; width: 4px; border-radius: 999px; background: var(--indigo); opacity: .7; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label { font-size: 12px; font-weight: 600; color: var(--slate); letter-spacing: 0.03em; }
+input.small { width: 100%; box-sizing: border-box; border: 1px solid var(--silver); background: var(--paper); border-radius: 10px; outline: none; color: var(--graphite); font-size: 16px; padding: 12px; min-height: 44px; }
 
-/* Row left stripe per guideline (3–4px) */
-tbody tr { position: relative; }
-tbody tr::before { content: ""; position: absolute; left: -6px; top: 6px; bottom: 6px; width: 4px; border-radius: 3px; background: var(--indigo); opacity: .7; }
+.set-actions { display: flex; justify-content: flex-end; align-items: center; }
 
-/* Inputs cells */
-td.cell { background: var(--slate-50); border: 1px solid var(--silver); border-radius: 12px; padding: 10px; }
-input.small { width: 100%; box-sizing: border-box; border: none; background: transparent; outline: none; color: var(--graphite); font-size: 16px; }
-
-.set-actions { display: flex; justify-content: flex-end; }
+@media (max-width: 520px) {
+  .set-row { grid-template-columns: 1fr; padding-left: 24px; }
+  .set-actions { justify-content: flex-start; }
+}
 .muted { color: var(--slate); }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
@@ -146,10 +143,34 @@ function save(){ state.date = $("#date").value; localStorage.setItem(STORAGE_KEY
 function load(){ const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return; try{ Object.assign(state, JSON.parse(raw)); } catch(e){} }
 function setDateInput(){ $("#date").value = state.date || todayISO(); }
 
-function addExercise(name="未命名項目"){ state.exercises.push({ id: uid(), name, sets: [] }); render(); save(); }
+function ensureBaselineSets(){
+  let mutated = false;
+  for(const ex of state.exercises){
+    if(!Array.isArray(ex.sets)){
+      ex.sets = [];
+      mutated = true;
+    }
+    if(ex.sets.length === 0){
+      ex.sets.push({ id: uid(), w: "", r: "" });
+      mutated = true;
+    }
+  }
+  return mutated;
+}
+
+function addExercise(name="未命名項目"){ state.exercises.push({ id: uid(), name, sets: [{ id: uid(), w: "", r: "" }] }); render(); save(); }
 function removeExercise(id){ state.exercises = state.exercises.filter(e=>e.id!==id); render(); save(); }
 function addSet(exId, w="", r=""){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.sets.push({ id: uid(), w: String(w), r: String(r) }); render(); save(); }
-function removeSet(exId, setId){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.sets = ex.sets.filter(s=>s.id!==setId); render(); save(); }
+function removeSet(exId, setId){
+  const ex = state.exercises.find(e=>e.id===exId);
+  if(!ex) return;
+  ex.sets = ex.sets.filter(s=>s.id!==setId);
+  if(ex.sets.length === 0){
+    ex.sets.push({ id: uid(), w: "", r: "" });
+  }
+  render();
+  save();
+}
 function updateExerciseName(exId, name){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.name = name.trim() || "未命名項目"; save(); }
 function updateSetField(exId, setId, field, value){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; const s = ex.sets.find(s=>s.id===setId); if(!s) return; s[field] = value.replace(/[^\d.]/g, ""); save(); }
 
@@ -182,6 +203,7 @@ async function shareCsv(){ const txt = $("#csvOut").value || exportCSV(); const 
 
 function render(){
   setDateInput();
+  const mutated = ensureBaselineSets();
   const wrap = $("#exercises"); wrap.innerHTML = "";
   for(const ex of state.exercises){
     const card = document.createElement("section");
@@ -197,39 +219,38 @@ function render(){
           <button class="btn danger" data-del="ex">刪除項目</button>
         </div>
       </div>
-      <table>
-        <thead>
-          <tr>
-            <th>重量</th>
-            <th>次數</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="set-list"></div>
     `;
     // Handlers
     $("input", card).addEventListener("input", (e)=> updateExerciseName(ex.id, e.target.value));
     $('[data-add="+"]', card).addEventListener("click", ()=> addSet(ex.id, "", ""));
     $('[data-del="ex"]', card).addEventListener("click", ()=> removeExercise(ex.id));
 
-    const tbody = $("tbody", card);
+    const setList = $(".set-list", card);
     for(const s of ex.sets){
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td class="cell"><input class="small mono" inputmode="decimal" pattern="[0-9.]*" placeholder="例如 60" value="${s.w ?? ""}" aria-label="重量" /></td>
-        <td class="cell"><input class="small mono" inputmode="numeric" pattern="[0-9]*" placeholder="例如 8" value="${s.r ?? ""}" aria-label="次數" /></td>
-        <td class="set-actions"><button class="btn danger" data-del="set">刪除</button></td>
+      const row = document.createElement("div");
+      row.className = "set-row";
+      row.innerHTML = `
+        <label class="field">
+          <span class="field-label">重量 (kg)</span>
+          <input class="small mono" inputmode="decimal" pattern="[0-9.]*" placeholder="例如 60" value="${s.w ?? ""}" aria-label="重量 (公斤)" />
+        </label>
+        <label class="field">
+          <span class="field-label">次數</span>
+          <input class="small mono" inputmode="numeric" pattern="[0-9]*" placeholder="例如 8" value="${s.r ?? ""}" aria-label="次數" />
+        </label>
+        <div class="set-actions"><button class="btn danger" data-del="set">刪除</button></div>
       `;
-      const [wInput, rInput] = $$('input', tr);
+      const [wInput, rInput] = $$('input', row);
       wInput.addEventListener('input', (e)=> updateSetField(ex.id, s.id, 'w', e.target.value));
       rInput.addEventListener('input', (e)=> updateSetField(ex.id, s.id, 'r', e.target.value));
-      $('[data-del="set"]', tr).addEventListener('click', ()=> removeSet(ex.id, s.id));
-      tbody.appendChild(tr);
+      $('[data-del="set"]', row).addEventListener('click', ()=> removeSet(ex.id, s.id));
+      setList.appendChild(row);
     }
 
     wrap.appendChild(card);
   }
+  if(mutated) save();
 }
 
 function escapeHtml(s=""){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
