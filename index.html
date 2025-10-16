@@ -33,14 +33,17 @@
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial;
 }
 html, body { margin: 0; padding: 0; background: var(--paper); color: var(--graphite); font-family: var(--font); -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; display: flex; flex-direction: column; }
 
 /* Header */
-header { position: sticky; top: 0; background: var(--paper); border-bottom: 1px solid var(--silver); padding: 14px env(safe-area-inset-right) 10px env(safe-area-inset-left); z-index: 10; }
-h1 { margin: 0; font-size: 18px; }
+header { background: var(--paper); border-bottom: 1px solid var(--silver); padding: 20px 16px 12px; text-align: center; }
+header h1 { margin: 0 0 8px; font-size: 20px; }
+header .date-wrap { display: flex; justify-content: center; }
+h1 { margin: 0; font-size: 20px; }
 .sub { font-size: 12px; color: var(--slate); margin-top: 4px; }
 
 /* Layout helpers */
-main { padding: 12px; }
+main { flex: 1; padding: 20px 16px 24px; }
 .row { display: flex; gap: var(--gap); align-items: center; flex-wrap: wrap; }
 .stack { display: flex; flex-direction: column; gap: var(--gap); }
 .grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
@@ -61,8 +64,8 @@ button, input, select, textarea { font: inherit; }
 .btn.danger { background: var(--paper); border-color: var(--coral); color: var(--coral); }
 .btn.ghost { background: var(--paper); border-style: dashed; border-color: var(--silver); color: var(--graphite); }
 
-/* Sticky toolbar */
-.toolbar { position: sticky; bottom: 0; background: var(--paper); border-top: 1px solid var(--silver); padding: 10px env(safe-area-inset-right) calc(10px + env(safe-area-inset-bottom)) env(safe-area-inset-left); display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+/* Toolbar */
+.toolbar { background: var(--paper); border-top: 1px solid var(--silver); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: auto; }
 
 /* Exercise card */
 .exercise { background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); padding: var(--pad); }
@@ -75,13 +78,17 @@ button, input, select, textarea { font: inherit; }
 
 /* Set list */
 .set-list { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; }
-.set-row { position: relative; display: grid; grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) auto; gap: 12px; align-items: end; padding: 16px 16px 16px 28px; background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); box-shadow: 3px 3px 6px rgba(207, 216, 230, 0.4); }
+.set-row { position: relative; display: grid; grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) minmax(100px, 1fr) auto; gap: 12px; align-items: end; padding: 16px 16px 16px 28px; background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); box-shadow: 3px 3px 6px rgba(207, 216, 230, 0.4); }
 .set-row::before { content: ""; position: absolute; left: 12px; top: 12px; bottom: 12px; width: 4px; border-radius: 999px; background: var(--indigo); opacity: .7; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field-label { font-size: 12px; font-weight: 600; color: var(--slate); letter-spacing: 0.03em; }
 input.small { width: 100%; box-sizing: border-box; border: 1px solid var(--silver); background: var(--paper); border-radius: 10px; outline: none; color: var(--graphite); font-size: 16px; padding: 12px; min-height: 44px; }
 
 .set-actions { display: flex; justify-content: flex-end; align-items: center; }
+.field.sets-field { align-items: flex-start; }
+.sets-control { display: inline-flex; align-items: center; gap: 10px; background: var(--paper); border: 1px solid var(--silver); border-radius: 999px; padding: 6px 12px; }
+.sets-value { min-width: 32px; text-align: center; font-weight: 600; font-size: 18px; }
+.btn.circle { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; line-height: 1; }
 
 @media (max-width: 520px) {
   .set-row { grid-template-columns: 1fr; padding-left: 24px; }
@@ -99,8 +106,8 @@ header input[type="date"] { border: none; border-bottom: 1px dashed var(--silver
 </head>
 <body>
   <header>
-    <div class="row" style="justify-content: space-between; align-items: center;">
-      <h1>FuGym 健身記錄</h1>
+    <h1>FuGym 健身記錄</h1>
+    <div class="date-wrap">
       <input id="date" type="date" />
     </div>
   </header>
@@ -138,6 +145,7 @@ function todayISO(){
   return tz.toISOString().slice(0,10);
 }
 function uid(){ return Math.random().toString(36).slice(2,10); }
+function createSet(w="", r="", s="1"){ return { id: uid(), w: String(w ?? ""), r: String(r ?? ""), s: String(s ?? "") }; }
 
 function save(){ state.date = $("#date").value; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function load(){ const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return; try{ Object.assign(state, JSON.parse(raw)); } catch(e){} }
@@ -146,33 +154,64 @@ function setDateInput(){ $("#date").value = state.date || todayISO(); }
 function ensureBaselineSets(){
   let mutated = false;
   for(const ex of state.exercises){
+    if(ex.name === "未命名項目"){
+      ex.name = "";
+      mutated = true;
+    }
     if(!Array.isArray(ex.sets)){
       ex.sets = [];
       mutated = true;
     }
     if(ex.sets.length === 0){
-      ex.sets.push({ id: uid(), w: "", r: "" });
+      ex.sets.push(createSet());
       mutated = true;
+    }
+    for(const set of ex.sets){
+      if(set.w === undefined){ set.w = ""; mutated = true; }
+      if(set.r === undefined){ set.r = ""; mutated = true; }
+      if(set.s === undefined){ set.s = "1"; mutated = true; }
     }
   }
   return mutated;
 }
 
-function addExercise(name="未命名項目"){ state.exercises.push({ id: uid(), name, sets: [{ id: uid(), w: "", r: "" }] }); render(); save(); }
+function addExercise(name=""){ const safeName = (name ?? "").trim(); state.exercises.push({ id: uid(), name: safeName, sets: [createSet()] }); render(); save(); }
 function removeExercise(id){ state.exercises = state.exercises.filter(e=>e.id!==id); render(); save(); }
-function addSet(exId, w="", r=""){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.sets.push({ id: uid(), w: String(w), r: String(r) }); render(); save(); }
+function addSet(exId, w="", r="", s=""){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.sets.push(createSet(w, r, s)); render(); save(); }
 function removeSet(exId, setId){
   const ex = state.exercises.find(e=>e.id===exId);
   if(!ex) return;
   ex.sets = ex.sets.filter(s=>s.id!==setId);
   if(ex.sets.length === 0){
-    ex.sets.push({ id: uid(), w: "", r: "" });
+    ex.sets.push(createSet());
   }
   render();
   save();
 }
-function updateExerciseName(exId, name){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.name = name.trim() || "未命名項目"; save(); }
-function updateSetField(exId, setId, field, value){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; const s = ex.sets.find(s=>s.id===setId); if(!s) return; s[field] = value.replace(/[^\d.]/g, ""); save(); }
+function updateExerciseName(exId, name){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.name = name.trim(); save(); }
+function updateSetField(exId, setId, field, value){
+  const ex = state.exercises.find(e=>e.id===exId);
+  if(!ex) return;
+  const s = ex.sets.find(s=>s.id===setId);
+  if(!s) return;
+  let cleaned = String(value ?? "");
+  if(field === 'w') cleaned = cleaned.replace(/[^\d.]/g, "");
+  else cleaned = cleaned.replace(/\D/g, "");
+  s[field] = cleaned;
+  save();
+}
+
+function changeSetCount(exId, setId, delta){
+  const ex = state.exercises.find(e=>e.id===exId);
+  if(!ex) return;
+  const set = ex.sets.find(s=>s.id===setId);
+  if(!set) return;
+  const current = parseInt(set.s || "0", 10) || 0;
+  const next = Math.max(0, current + delta);
+  set.s = next ? String(next) : "";
+  render();
+  save();
+}
 
 function exportCSV(){
   const date = $("#date").value || state.date || todayISO();
@@ -180,15 +219,24 @@ function exportCSV(){
   for(const ex of state.exercises){
     const map = new Map();
     for(const s of ex.sets){
-      const w = s.w || "0";
+      const w = (s.w || "0").trim();
       const r = parseInt(s.r||"0", 10) || 0;
-      if(!map.has(w)) map.set(w, { reps:0, sets:0 });
-      map.get(w).reps += r; map.get(w).sets += 1;
+      const sets = parseInt(s.s||"0", 10) || 0;
+      if(!w && !r && !sets) continue;
+      const key = `${w}|${r}`;
+      if(!map.has(key)) map.set(key, { weight: w, reps: r, totalReps: 0, sets: 0 });
+      const bucket = map.get(key);
+      bucket.totalReps += r * sets;
+      bucket.sets += sets;
     }
-    const sorted = [...map.entries()].sort((a,b)=>parseFloat(a[0]||0)-parseFloat(b[0]||0));
-    for(const [w, agg] of sorted){
-      if(agg.sets===0) continue;
-      lines.push([date, csvSafe(ex.name), w, agg.reps, agg.sets].join(","));
+    const sorted = [...map.values()].sort((a,b)=>{
+      const weightDiff = (parseFloat(a.weight || 0) || 0) - (parseFloat(b.weight || 0) || 0);
+      if(weightDiff !== 0) return weightDiff;
+      return a.reps - b.reps;
+    });
+    for(const agg of sorted){
+      if(agg.sets === 0) continue;
+      lines.push([date, csvSafe(ex.name || "未命名項目"), agg.weight, agg.totalReps, agg.sets].join(","));
     }
   }
   const out = lines.join("\n");
@@ -212,10 +260,10 @@ function render(){
       <div class="ex-header">
         <div class="ex-title">
           <span class="chip">項目</span>
-          <input type="text" value="${escapeHtml(ex.name)}" placeholder="例如：深蹲" aria-label="項目名稱" />
+          <input type="text" value="${escapeHtml(ex.name || "")}" placeholder="未命名項目" aria-label="項目名稱" />
         </div>
         <div class="row">
-          <button class="btn secondary" data-add="+">+ 組</button>
+          <button class="btn secondary" data-add="+">換重量／次數</button>
           <button class="btn danger" data-del="ex">刪除項目</button>
         </div>
       </div>
@@ -223,13 +271,14 @@ function render(){
     `;
     // Handlers
     $("input", card).addEventListener("input", (e)=> updateExerciseName(ex.id, e.target.value));
-    $('[data-add="+"]', card).addEventListener("click", ()=> addSet(ex.id, "", ""));
+    $('[data-add="+"]', card).addEventListener("click", ()=> addSet(ex.id));
     $('[data-del="ex"]', card).addEventListener("click", ()=> removeExercise(ex.id));
 
     const setList = $(".set-list", card);
     for(const s of ex.sets){
       const row = document.createElement("div");
       row.className = "set-row";
+      const setsCount = parseInt(s.s || "0", 10) || 0;
       row.innerHTML = `
         <label class="field">
           <span class="field-label">重量 (kg)</span>
@@ -239,11 +288,21 @@ function render(){
           <span class="field-label">次數</span>
           <input class="small mono" inputmode="numeric" pattern="[0-9]*" placeholder="例如 8" value="${s.r ?? ""}" aria-label="次數" />
         </label>
+        <div class="field sets-field">
+          <span class="field-label">組數</span>
+          <div class="sets-control">
+            <button type="button" class="btn circle" data-sets="dec" aria-label="減少組數">-</button>
+            <span class="sets-value">${setsCount}</span>
+            <button type="button" class="btn circle" data-sets="inc" aria-label="增加組數">+</button>
+          </div>
+        </div>
         <div class="set-actions"><button class="btn danger" data-del="set">刪除</button></div>
       `;
       const [wInput, rInput] = $$('input', row);
       wInput.addEventListener('input', (e)=> updateSetField(ex.id, s.id, 'w', e.target.value));
       rInput.addEventListener('input', (e)=> updateSetField(ex.id, s.id, 'r', e.target.value));
+      $('[data-sets="dec"]', row).addEventListener('click', ()=> changeSetCount(ex.id, s.id, -1));
+      $('[data-sets="inc"]', row).addEventListener('click', ()=> changeSetCount(ex.id, s.id, 1));
       $('[data-del="set"]', row).addEventListener('click', ()=> removeSet(ex.id, s.id));
       setList.appendChild(row);
     }
@@ -278,13 +337,31 @@ $("#exportBtn").addEventListener("click", ()=> {
 });
 $("#shareCsv").addEventListener("click", shareCsv);
 
-// Quick UX: Enter on reps adds a new set
+// Quick UX: Enter on 次數 adds a new row for new weight/reps combo
 document.addEventListener('keydown', (e)=>{
   if(e.key === 'Enter' && e.target.matches('input[aria-label="次數"]')){
     const card = e.target.closest('.exercise');
     const idx = $$('.exercise').indexOf(card);
     const ex = state.exercises[idx];
-    if(ex) addSet(ex.id, '', '');
+    if(ex) addSet(ex.id);
+    return;
+  }
+  if(e.key === 'Tab' && !e.shiftKey && e.target.matches('input[aria-label="次數"]')){
+    const row = e.target.closest('.set-row');
+    const incBtn = row && $('[data-sets="inc"]', row);
+    if(incBtn){
+      e.preventDefault();
+      incBtn.focus();
+    }
+    return;
+  }
+  if(e.key === 'Tab' && e.shiftKey && e.target.matches('button[data-sets]')){
+    const row = e.target.closest('.set-row');
+    const repsInput = row && $('input[aria-label="次數"]', row);
+    if(repsInput){
+      e.preventDefault();
+      repsInput.focus();
+    }
   }
 });
 </script>
