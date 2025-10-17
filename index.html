@@ -78,21 +78,20 @@ button, input, select, textarea { font: inherit; }
 
 /* Set list */
 .set-list { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; }
-.set-row { position: relative; display: grid; grid-template-columns: minmax(120px, 1fr) minmax(120px, 1fr) minmax(100px, 1fr) auto; gap: 12px; align-items: end; padding: 16px 16px 16px 28px; background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); box-shadow: 3px 3px 6px rgba(207, 216, 230, 0.4); }
-.set-row::before { content: ""; position: absolute; left: 12px; top: 12px; bottom: 12px; width: 4px; border-radius: 999px; background: var(--indigo); opacity: .7; }
-.field { display: flex; flex-direction: column; gap: 6px; }
-.field-label { font-size: 12px; font-weight: 600; color: var(--slate); letter-spacing: 0.03em; }
-input.small { width: 100%; box-sizing: border-box; border: 1px solid var(--silver); background: var(--paper); border-radius: 10px; outline: none; color: var(--graphite); font-size: 16px; padding: 12px; min-height: 44px; }
+.set-row { position: relative; display: grid; grid-template-columns: minmax(110px, 1fr) minmax(110px, 1fr) auto auto; gap: 12px; align-items: center; padding: 14px 16px 14px 28px; background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); box-shadow: 3px 3px 6px rgba(207, 216, 230, 0.4); }
+.set-row::before { content: ""; position: absolute; left: 12px; top: 10px; bottom: 10px; width: 4px; border-radius: 999px; background: var(--indigo); opacity: .7; }
+.set-input { display: flex; align-items: center; }
+input.small { width: 100%; box-sizing: border-box; border: 1px solid var(--silver); background: var(--paper); border-radius: 10px; outline: none; color: var(--graphite); font-size: 18px; padding: 10px 12px; min-height: 44px; text-align: center; }
 
 .set-actions { display: flex; justify-content: flex-end; align-items: center; }
-.field.sets-field { align-items: flex-start; }
-.sets-control { display: inline-flex; align-items: center; gap: 10px; background: var(--paper); border: 1px solid var(--silver); border-radius: 999px; padding: 6px 12px; }
-.sets-value { min-width: 32px; text-align: center; font-weight: 600; font-size: 18px; }
-.btn.circle { width: 36px; height: 36px; min-height: 36px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; line-height: 1; }
+.sets-control { display: inline-flex; align-items: center; gap: 12px; background: var(--paper); border: 1px solid var(--silver); border-radius: 999px; padding: 6px 14px; }
+.sets-value { min-width: 26px; text-align: center; font-weight: 600; font-size: 18px; }
+.btn.circle { width: 34px; height: 34px; min-height: 34px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 20px; line-height: 1; }
 
 @media (max-width: 520px) {
-  .set-row { grid-template-columns: 1fr; padding-left: 24px; }
+  .set-row { grid-template-columns: 1fr; padding-left: 24px; gap: 10px; }
   .set-actions { justify-content: flex-start; }
+  .sets-control { justify-content: center; }
 }
 .muted { color: var(--slate); }
 .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
@@ -145,7 +144,7 @@ function todayISO(){
   return tz.toISOString().slice(0,10);
 }
 function uid(){ return Math.random().toString(36).slice(2,10); }
-function createSet(w="", r="", s="1"){ return { id: uid(), w: String(w ?? ""), r: String(r ?? ""), s: String(s ?? "") }; }
+function createSet(w="", r="", s="1"){ const sets = Math.max(1, parseInt(s ?? "1", 10) || 1); return { id: uid(), w: String(w ?? ""), r: String(r ?? ""), s: String(sets) }; }
 
 function save(){ state.date = $("#date").value; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
 function load(){ const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return; try{ Object.assign(state, JSON.parse(raw)); } catch(e){} }
@@ -169,7 +168,8 @@ function ensureBaselineSets(){
     for(const set of ex.sets){
       if(set.w === undefined){ set.w = ""; mutated = true; }
       if(set.r === undefined){ set.r = ""; mutated = true; }
-      if(set.s === undefined){ set.s = "1"; mutated = true; }
+      const sets = Math.max(1, parseInt(set.s ?? "1", 10) || 1);
+      if(String(sets) !== set.s){ set.s = String(sets); mutated = true; }
     }
   }
   return mutated;
@@ -206,37 +206,23 @@ function changeSetCount(exId, setId, delta){
   if(!ex) return;
   const set = ex.sets.find(s=>s.id===setId);
   if(!set) return;
-  const current = parseInt(set.s || "0", 10) || 0;
-  const next = Math.max(0, current + delta);
-  set.s = next ? String(next) : "";
+  const current = parseInt(set.s || "1", 10) || 1;
+  const next = Math.max(1, current + delta);
+  set.s = String(next);
   render();
   save();
 }
 
 function exportCSV(){
   const date = $("#date").value || state.date || todayISO();
-  const lines = ["date,exercise,weight_kg,total_reps,sets"]; // header
+  const lines = ["date,exercise,weight_kg,reps_per_set,sets"]; // header
   for(const ex of state.exercises){
-    const map = new Map();
     for(const s of ex.sets){
-      const w = (s.w || "0").trim();
-      const r = parseInt(s.r||"0", 10) || 0;
-      const sets = parseInt(s.s||"0", 10) || 0;
+      const w = (s.w || "").trim();
+      const r = (s.r || "").trim();
+      const sets = (s.s || "").trim();
       if(!w && !r && !sets) continue;
-      const key = `${w}|${r}`;
-      if(!map.has(key)) map.set(key, { weight: w, reps: r, totalReps: 0, sets: 0 });
-      const bucket = map.get(key);
-      bucket.totalReps += r * sets;
-      bucket.sets += sets;
-    }
-    const sorted = [...map.values()].sort((a,b)=>{
-      const weightDiff = (parseFloat(a.weight || 0) || 0) - (parseFloat(b.weight || 0) || 0);
-      if(weightDiff !== 0) return weightDiff;
-      return a.reps - b.reps;
-    });
-    for(const agg of sorted){
-      if(agg.sets === 0) continue;
-      lines.push([date, csvSafe(ex.name || "未命名項目"), agg.weight, agg.totalReps, agg.sets].join(","));
+      lines.push([date, csvSafe(ex.name || "未命名項目"), w, r, sets].join(","));
     }
   }
   const out = lines.join("\n");
@@ -278,23 +264,14 @@ function render(){
     for(const s of ex.sets){
       const row = document.createElement("div");
       row.className = "set-row";
-      const setsCount = parseInt(s.s || "0", 10) || 0;
+      const setsCount = Math.max(1, parseInt(s.s || "1", 10) || 1);
       row.innerHTML = `
-        <label class="field">
-          <span class="field-label">重量 (kg)</span>
-          <input class="small mono" inputmode="decimal" pattern="[0-9.]*" placeholder="例如 60" value="${s.w ?? ""}" aria-label="重量 (公斤)" />
-        </label>
-        <label class="field">
-          <span class="field-label">次數</span>
-          <input class="small mono" inputmode="numeric" pattern="[0-9]*" placeholder="例如 8" value="${s.r ?? ""}" aria-label="次數" />
-        </label>
-        <div class="field sets-field">
-          <span class="field-label">組數</span>
-          <div class="sets-control">
-            <button type="button" class="btn circle" data-sets="dec" aria-label="減少組數">-</button>
-            <span class="sets-value">${setsCount}</span>
-            <button type="button" class="btn circle" data-sets="inc" aria-label="增加組數">+</button>
-          </div>
+        <div class="set-input"><input class="small mono" inputmode="decimal" pattern="[0-9.]*" value="${s.w ?? ""}" aria-label="重量 (公斤)" enterkeyhint="next" /></div>
+        <div class="set-input"><input class="small mono" inputmode="numeric" pattern="[0-9]*" value="${s.r ?? ""}" aria-label="次數" enterkeyhint="next" /></div>
+        <div class="sets-control">
+          <button type="button" class="btn circle" data-sets="dec" aria-label="減少組數">-</button>
+          <span class="sets-value">${setsCount}</span>
+          <button type="button" class="btn circle" data-sets="inc" aria-label="增加組數">+</button>
         </div>
         <div class="set-actions"><button class="btn danger" data-del="set">刪除</button></div>
       `;
