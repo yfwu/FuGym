@@ -233,7 +233,7 @@ function exportCSV(){
 function csvSafe(text){ const t = String(text ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; }
 function clearAll(){ if(confirm("清空本次所有資料？此動作不可還原。")){ state.exercises = []; $("#csvOut").value = ""; render(); save(); } }
 function copyCsv(){ const txt = $("#csvOut").value; if(!txt){ alert("沒有可複製的資料，請先匯出。"); return; } navigator.clipboard.writeText(txt).then(()=>alert("已複製到剪貼簿"),()=>alert("複製失敗，請手動選取文字")); }
-async function shareCsv(){ const txt = $("#csvOut").value || exportCSV(); const filename = `gym_${state.date||todayISO()}.csv`; try{ if(navigator.canShare && window.Blob){ const file = new File([txt], filename, { type: "text/csv" }); await navigator.share({ title: "FuGym 健身記錄", text: "本次訓練 CSV", files: [file] }); } else if (navigator.share) { await navigator.share({ title: "FuGym 健身記錄", text: txt }); } }catch(e){ /* user canceled or unsupported */ } }
+async function shareCsv(){ const txt = $("#csvOut").value || exportCSV(); const dateToken = state.date || todayISO(); const filename = `${dateToken}-gym.csv`; try{ if(navigator.canShare && window.Blob){ const file = new File([txt], filename, { type: "text/csv" }); await navigator.share({ title: "FuGym 健身記錄", text: "本次訓練 CSV", files: [file] }); } else if (navigator.share) { await navigator.share({ title: "FuGym 健身記錄", text: txt }); } }catch(e){ /* user canceled or unsupported */ } }
 
 function render(){
   setDateInput();
