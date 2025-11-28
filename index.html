@@ -118,18 +118,18 @@ header input[type="date"] { border: none; border-bottom: 1px dashed var(--silver
   <div class="toolbar">
     <button class="btn primary" id="addExercise">新增項目</button>
     <button class="btn danger" id="clearAll">清空本次</button>
-    <button class="btn info" id="exportBtn">匯出並複製</button>
-    <button class="btn secondary" id="shareCsv">分享</button>
+    <button class="btn info" id="exportBtn">匯出 Markdown</button>
+    <button class="btn secondary" id="shareNote">分享</button>
   </div>
 
   <!-- Hidden CSV output for export -->
-  <textarea id="csvOut" style="display: none;"></textarea>
+  <textarea id="noteOut" style="display: none;"></textarea>
 
 <script>
 // Lightweight, dependency-free gym logger
 // - Matches FuLab 10-color design tokens
 // - Mobile-friendly, persistent localStorage, Web Share API
-// - Exports compact CSV grouped by exercise + weight (sum reps, count sets)
+// - Exports Obsidian-friendly Markdown notes for the Gym category
 
 const $ = (sel, root=document) => root.querySelector(sel);
 const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
@@ -213,27 +213,52 @@ function changeSetCount(exId, setId, delta){
   save();
 }
 
-function exportCSV(){
+function exportMarkdown(){
   const date = $("#date").value || state.date || todayISO();
-  const lines = ["date,exercise,weight_kg,reps_per_set,sets"]; // header
+  const rows = [];
   for(const ex of state.exercises){
+    const name = ex.name || "未命名項目";
     for(const s of ex.sets){
       const w = (s.w || "").trim();
       const r = (s.r || "").trim();
       const sets = (s.s || "").trim();
       if(!w && !r && !sets) continue;
-      lines.push([date, csvSafe(ex.name || "未命名項目"), w, r, sets].join(","));
+      rows.push({ name, w, r, sets });
     }
   }
-  const out = lines.join("\n");
-  $("#csvOut").value = out;
+  const header = [
+    "---",
+    `title: FuGym ${date}`,
+    "category: Gym",
+    "layout: post",
+    `date: ${date}`,
+    "tags: []",
+    "---",
+    "",
+    "| Exercise | Weight (kg) | Reps per Set | Sets |",
+    "| --- | --- | --- | --- |"
+  ];
+  const body = rows.map(row => `| ${mdSafe(row.name)} | ${mdSafe(row.w)} | ${mdSafe(row.r)} | ${mdSafe(row.sets)} |`);
+  const out = [...header, ...body].join("\n");
+  $("#noteOut").value = out;
   return out;
 }
 
-function csvSafe(text){ const t = String(text ?? ""); return /[",\n]/.test(t) ? `"${t.replace(/"/g,'""')}"` : t; }
-function clearAll(){ if(confirm("清空本次所有資料？此動作不可還原。")){ state.exercises = []; $("#csvOut").value = ""; render(); save(); } }
-function copyCsv(){ const txt = $("#csvOut").value; if(!txt){ alert("沒有可複製的資料，請先匯出。"); return; } navigator.clipboard.writeText(txt).then(()=>alert("已複製到剪貼簿"),()=>alert("複製失敗，請手動選取文字")); }
-async function shareCsv(){ const txt = $("#csvOut").value || exportCSV(); const dateToken = state.date || todayISO(); const filename = `${dateToken}-gym.csv`; try{ if(navigator.canShare && window.Blob){ const file = new File([txt], filename, { type: "text/csv" }); await navigator.share({ title: "FuGym 健身記錄", text: "本次訓練 CSV", files: [file] }); } else if (navigator.share) { await navigator.share({ title: "FuGym 健身記錄", text: txt }); } }catch(e){ /* user canceled or unsupported */ } }
+function mdSafe(text){ return String(text ?? "").replace(/\|/g, "\\|").replace(/\n/g, " "); }
+function clearAll(){ if(confirm("清空本次所有資料？此動作不可還原。")){ state.exercises = []; $("#noteOut").value = ""; render(); save(); } }
+async function shareNote(){
+  const txt = $("#noteOut").value || exportMarkdown();
+  const dateToken = state.date || todayISO();
+  const filename = `${dateToken}-gym.md`;
+  try{
+    if(navigator.canShare && window.Blob){
+      const file = new File([txt], filename, { type: "text/markdown" });
+      await navigator.share({ title: "FuGym 健身筆記", text: "本次訓練筆記", files: [file] });
+    } else if (navigator.share) {
+      await navigator.share({ title: "FuGym 健身筆記", text: txt });
+    }
+  }catch(e){ /* user canceled or unsupported */ }
+}
 
 function render(){
   setDateInput();
@@ -304,15 +329,15 @@ $("#date").addEventListener("change", save);
 $("#addExercise").addEventListener("click", ()=> addExercise());
 $("#clearAll").addEventListener("click", clearAll);
 $("#exportBtn").addEventListener("click", ()=> {
-  const csv = exportCSV();
-  if (csv) {
-    navigator.clipboard.writeText(csv).then(
-      () => alert("CSV 已匯出並複製到剪貼簿！"),
+  const note = exportMarkdown();
+  if (note) {
+    navigator.clipboard.writeText(note).then(
+      () => alert("Markdown 已匯出並複製到剪貼簿！"),
       () => alert("複製失敗，請手動選取文字")
     );
   }
 });
-$("#shareCsv").addEventListener("click", shareCsv);
+$("#shareNote").addEventListener("click", shareNote);
 
 // Quick UX: Enter on 次數 adds a new row for new weight/reps combo
 document.addEventListener('keydown', (e)=>{
