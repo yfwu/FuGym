@@ -3,22 +3,19 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>FuGym 健身記錄</title>
+<title>FuGym</title>
 <style>
-/* FuLab 10-Color System (from guideline) */
 :root {
-  /* Core */
   --paper: #FFFFFF;
   --silver: #D8DEE9;
   --graphite: #2E3440;
-  --teal: #5EBCBF;      /* primary */
-  --indigo: #81A1C1;    /* info */
-  --emerald: #A3BE8C;   /* success */
-  --amber: #EBCB8B;     /* warning */
-  --coral: #D08770;     /* danger */
-  --plum: #B48EAD;      /* alt/selection */
-  --slate: #708090;     /* neutral strong */
-  /* Tints (on white) */
+  --teal: #5EBCBF;
+  --indigo: #81A1C1;
+  --emerald: #A3BE8C;
+  --amber: #EBCB8B;
+  --coral: #D08770;
+  --plum: #B48EAD;
+  --slate: #708090;
   --teal-50: rgba(94, 188, 191, 0.12);
   --indigo-50: rgba(129, 161, 193, 0.15);
   --emerald-50: rgba(163, 190, 140, 0.18);
@@ -26,62 +23,167 @@
   --coral-50: rgba(208, 135, 112, 0.18);
   --plum-50: rgba(180, 142, 173, 0.18);
   --slate-50: rgba(112, 128, 144, 0.14);
-  /* Layout tokens */
   --pad: 12px;
-  --radius: 16px; /* rounded-xl2 per guideline */
+  --radius: 16px;
   --gap: 10px;
   --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial;
 }
-html, body { margin: 0; padding: 0; background: var(--paper); color: var(--graphite); font-family: var(--font); -webkit-font-smoothing: antialiased; }
-body { min-height: 100vh; display: flex; flex-direction: column; }
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--graphite);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+body { min-height: 100vh; }
 
-/* Header */
-header { background: var(--paper); border-bottom: 1px solid var(--silver); padding: 20px 16px 12px; text-align: center; }
-header h1 { margin: 0 0 8px; font-size: 20px; }
-header .date-wrap { display: flex; justify-content: center; }
-h1 { margin: 0; font-size: 20px; }
-.sub { font-size: 12px; color: var(--slate); margin-top: 4px; }
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
 
-/* Layout helpers */
 main { flex: 1; padding: 20px 16px 24px; }
 .row { display: flex; gap: var(--gap); align-items: center; flex-wrap: wrap; }
 .stack { display: flex; flex-direction: column; gap: var(--gap); }
 .grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.center { align-items: center; justify-content: center; text-align: center; }
 @media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
 
 button, input, select, textarea { font: inherit; }
 
-/* Cards / Surfaces (neumorphism-lite) */
-.card { background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); padding: var(--pad); box-shadow: 6px 6px 14px #cfd8e6, -6px -6px 14px #ffffff; }
-.card:active { box-shadow: inset 6px 6px 12px #cfd8e6, inset -6px -6px 12px #ffffff; }
+.card {
+  background: var(--paper);
+  border: 1px solid var(--silver);
+  border-radius: var(--radius);
+  padding: var(--pad);
+}
 
-/* Buttons */
-.btn { border: 1px solid var(--silver); background: var(--paper); color: var(--graphite); border-radius: 12px; padding: 12px 16px; min-height: 44px; font-size: 16px; cursor: pointer; }
-.btn:active { transform: scale(.98); box-shadow: inset 6px 6px 12px #cfd8e6, inset -6px -6px 12px #ffffff; }
+.btn {
+  border: 1px solid var(--silver);
+  background: var(--paper);
+  color: var(--graphite);
+  border-radius: 12px;
+  padding: 12px 16px;
+  min-height: 44px;
+  font-size: 16px;
+  cursor: pointer;
+}
+.btn:active { transform: scale(.98); }
 .btn.primary { background: var(--teal); color: #fff; border-color: var(--teal); }
 .btn.secondary { background: var(--paper); border-color: var(--silver); }
 .btn.info { background: var(--indigo); color: #fff; border-color: var(--indigo); }
 .btn.danger { background: var(--paper); border-color: var(--coral); color: var(--coral); }
-.btn.ghost { background: var(--paper); border-style: dashed; border-color: var(--silver); color: var(--graphite); }
+.btn.ghost { background: var(--paper); border-style: dashed; border-color: var(--silver); }
 
-/* Toolbar */
-.toolbar { background: var(--paper); border-top: 1px solid var(--silver); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: auto; }
+.toolbar {
+  background: var(--paper);
+  border-top: 1px solid var(--silver);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: auto;
+}
 
-/* Exercise card */
+.topbar {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--silver);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.topbar-meta {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tabs {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border: 1px solid var(--silver);
+  border-radius: 999px;
+  background: var(--paper);
+}
+.tab {
+  border: 1px solid transparent;
+  background: var(--paper);
+  color: var(--graphite);
+  border-radius: 999px;
+  padding: 6px 12px;
+  min-height: auto;
+  font-size: 14px;
+}
+.tab.active {
+  background: var(--teal-50);
+  border-color: var(--teal);
+}
+
+h1, h2, h3 { margin: 0; }
+.sub { font-size: 12px; color: var(--slate); }
+.muted { color: var(--slate); }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+
+input, textarea, select {
+  border: 1px solid var(--silver);
+  background: var(--paper);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: var(--graphite);
+}
+input:focus, button:focus, textarea:focus, select:focus {
+  outline: 2px solid var(--teal-50);
+  box-shadow: 0 0 0 1px var(--silver) inset;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  color: var(--graphite);
+  background: var(--teal-50);
+  border: 1px solid var(--silver);
+  padding: 4px 8px;
+  min-height: 28px;
+  border-radius: 999px;
+}
+.badge-info { background: var(--indigo-50); }
+.chip-input {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  min-height: 28px;
+  border-radius: 999px;
+  background: var(--teal-50);
+  border: 1px solid var(--silver);
+  font-size: 12px;
+  color: var(--graphite);
+}
+.chip-input input {
+  border: none;
+  background: transparent;
+  padding: 0;
+  min-height: auto;
+  height: 18px;
+  line-height: 1;
+  font-size: 12px;
+  color: inherit;
+}
+
+/* Recorder styles */
 .exercise { background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); padding: var(--pad); }
 .ex-header { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
 .ex-title { flex: 1; display: flex; gap: 8px; align-items: center; min-width: 200px; }
 .ex-title input { flex: 1; border: none; border-bottom: 1px dashed var(--silver); padding: 6px 4px; font-weight: 600; min-width: 120px; font-size: 16px; }
 
-.chip { font-size: 12px; color: var(--graphite); background: var(--teal-50); border: 1px solid var(--silver); padding: 4px 8px; border-radius: 999px; }
-.badge-info { background: var(--indigo-50); }
-
-/* Set list */
 .set-list { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; }
-.set-row { position: relative; display: grid; grid-template-columns: minmax(88px, 1fr) minmax(88px, 1fr) auto auto; gap: 10px; align-items: center; padding: 12px 14px; background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); box-shadow: 3px 3px 6px rgba(207, 216, 230, 0.4); }
+.set-row { position: relative; display: grid; grid-template-columns: minmax(88px, 1fr) minmax(88px, 1fr) auto auto; gap: 10px; align-items: center; padding: 12px 14px; background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); }
 .set-input { display: flex; align-items: center; }
 input.small { width: 100%; box-sizing: border-box; border: 1px solid var(--silver); background: var(--paper); border-radius: 10px; outline: none; color: var(--graphite); font-size: 18px; padding: 8px 10px; min-height: 42px; text-align: center; }
-
 .set-actions { display: flex; justify-content: flex-end; align-items: center; }
 .sets-control { display: inline-flex; align-items: center; gap: 10px; background: var(--paper); border: 1px solid var(--silver); border-radius: 999px; padding: 6px 12px; }
 .sets-value { min-width: 24px; text-align: center; font-weight: 600; font-size: 18px; }
@@ -93,50 +195,106 @@ input.small { width: 100%; box-sizing: border-box; border: 1px solid var(--silve
   .sets-control { gap: 8px; padding: 5px 10px; }
   .btn.circle { width: 30px; height: 30px; min-height: 30px; font-size: 16px; }
 }
-.muted { color: var(--slate); }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
 
-/* Focus style: 2px tint outline + 1px inner silver for clarity */
-input:focus, button:focus, textarea:focus { outline: 2px solid var(--teal-50); box-shadow: 0 0 0 1px var(--silver) inset; border-radius: 8px; }
+.drop-zone {
+  border: 2px dashed var(--silver);
+  background: rgba(129, 161, 193, 0.08);
+  text-align: center;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+.drop-zone.dragging { border-color: var(--teal); background: var(--teal-50); }
 
-/* Responsive date input color inheritance */
-header input[type="date"] { border: none; border-bottom: 1px dashed var(--silver); background: transparent; color: var(--graphite); padding: 2px 4px; font-size: 16px; }
+/* Trainer styles */
+.sticky-timer {
+  position: sticky;
+  top: 0;
+  background: var(--paper);
+  border-bottom: 1px solid var(--silver);
+  padding: 12px 16px;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.timer-display { font-size: 24px; font-weight: 600; }
+.progress-text { font-size: 12px; color: var(--slate); }
+
 </style>
 </head>
 <body>
-  <header>
-    <h1>FuGym 健身記錄</h1>
-    <div class="date-wrap">
-      <input id="date" type="date" />
+  <section id="screen-recorder" class="screen active" data-screen="recorder">
+    <div class="topbar">
+      <div class="row" style="justify-content: space-between;">
+        <div class="tabs">
+          <button class="tab" data-go="recorder">Plan</button>
+          <button class="tab" data-go="trainer">Train</button>
+        </div>
+      </div>
+      <div class="row topbar-meta">
+        <label class="chip-input">
+          <span>日期</span>
+          <input id="recorderDate" type="date" />
+        </label>
+      </div>
     </div>
-  </header>
+    <main id="recorderApp" class="stack">
+      <section class="grid" id="recorderExercises"></section>
+    </main>
+    <div class="toolbar">
+      <button class="btn primary" id="recorderAddExercise">新增項目</button>
+      <button class="btn danger" id="recorderClear">清空本次</button>
+      <button class="btn info" id="recorderExport">匯出 Markdown</button>
+      <button class="btn" id="recorderOpenTrainer">送到 Trainer</button>
+      <button class="btn secondary" id="recorderShare">分享</button>
+    </div>
+    <textarea id="recorderNoteOut" style="display: none;"></textarea>
+  </section>
 
-  <main id="app" class="stack">
-    <section class="grid" id="exercises"></section>
-  </main>
+  <section id="screen-trainer" class="screen" data-screen="trainer">
+    <div class="sticky-timer" id="trainerTimerBar">
+      <div class="row" style="justify-content: space-between;">
+        <div class="tabs">
+          <button class="tab" data-go="recorder">Plan</button>
+          <button class="tab" data-go="trainer">Train</button>
+        </div>
+        <div class="timer-display" id="timerDisplay">00:00</div>
+        <div class="row">
+          <button class="btn primary" id="timerToggle">開始</button>
+          <button class="btn secondary" id="timerReset">重置</button>
+        </div>
+      </div>
+      <div class="row topbar-meta">
+        <span class="chip badge-info" id="trainerPlanTitle">尚未載入計畫</span>
+        <span class="chip" id="trainerProgress">0 / 0</span>
+      </div>
+    </div>
+    <main class="stack" id="trainerApp">
+      <section class="card stack" id="trainerCurrent"></section>
 
-  <div class="toolbar">
-    <button class="btn primary" id="addExercise">新增項目</button>
-    <button class="btn danger" id="clearAll">清空本次</button>
-    <button class="btn info" id="exportBtn">匯出 Markdown</button>
-    <button class="btn secondary" id="shareNote">分享</button>
-  </div>
+      <section class="card stack" id="trainerComplete" style="display: none;">
+        <h3>計畫完成</h3>
+        <p class="muted" id="trainerSummary"></p>
+        <div class="row">
+          <button class="btn info" id="trainerDownloadCsv">下載 CSV</button>
+          <button class="btn secondary" id="trainerShareCsv">分享 CSV</button>
+        </div>
+      </section>
 
-  <!-- Hidden CSV output for export -->
-  <textarea id="noteOut" style="display: none;"></textarea>
+      <section class="card stack drop-zone" id="trainerDrop">
+        <h3>拖放 Markdown 訓練計畫</h3>
+        <p class="muted">可以從 Recorder 匯出的 Markdown 拖進來，或直接貼上內容。</p>
+        <textarea id="trainerMarkdownInput" class="mono" rows="6" placeholder="貼上 Markdown 或拖放檔案"></textarea>
+        <div class="row">
+          <button class="btn info" id="trainerLoadMarkdown">載入計畫</button>
+          <button class="btn secondary" id="trainerClear">清空計畫</button>
+        </div>
+      </section>
+    </main>
+  </section>
 
 <script>
-// Lightweight, dependency-free gym logger
-// - Matches FuLab 10-color design tokens
-// - Mobile-friendly, persistent localStorage, Web Share API
-// - Exports Obsidian-friendly Markdown notes for the Gym category
-
 const $ = (sel, root=document) => root.querySelector(sel);
 const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
-const STORAGE_KEY = "gymlogger.fulab.v2";
-const defaultExercises = [];
-
-const state = { date: todayISO(), exercises: [] };
 
 function todayISO(){
   const d = new Date();
@@ -144,27 +302,49 @@ function todayISO(){
   return tz.toISOString().slice(0,10);
 }
 function uid(){ return Math.random().toString(36).slice(2,10); }
-function createSet(w="", r="", s="1"){ const sets = Math.max(1, parseInt(s ?? "1", 10) || 1); return { id: uid(), w: String(w ?? ""), r: String(r ?? ""), s: String(sets) }; }
 
-function save(){ state.date = $("#date").value; localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
-function load(){ const raw = localStorage.getItem(STORAGE_KEY); if(!raw) return; try{ Object.assign(state, JSON.parse(raw)); } catch(e){} }
-function setDateInput(){ $("#date").value = state.date || todayISO(); }
+// Navigation
+const screenMap = new Map($$('[data-screen]').map(s => [s.dataset.screen, s]));
+function showScreen(name){
+  const target = screenMap.get(name) || screenMap.get('recorder');
+  screenMap.forEach((el) => el.classList.toggle('active', el === target));
+  $$('.tab').forEach(btn => btn.classList.toggle('active', btn.dataset.go === name));
+  const titleMap = { recorder: 'FuGym Plan', trainer: 'FuGym Train' };
+  document.title = titleMap[name] || 'FuGym';
+  if(name && location.hash !== `#${name}`) location.hash = name;
+}
+$$('[data-go]').forEach(btn => btn.addEventListener('click', () => showScreen(btn.dataset.go)));
+window.addEventListener('load', () => {
+  const hash = location.hash.replace('#','');
+  if(hash && screenMap.has(hash)) showScreen(hash);
+  else showScreen('recorder');
+});
 
-function ensureBaselineSets(){
+// Recorder (FuGym Recorder)
+const STORAGE_RECORDER = "gymlogger.fulab.v2";
+const recorderState = { date: todayISO(), exercises: [] };
+const defaultExercises = [];
+
+function createSet(w="", r="", s="1"){
+  const sets = Math.max(1, parseInt(s ?? "1", 10) || 1);
+  return { id: uid(), w: String(w ?? ""), r: String(r ?? ""), s: String(sets) };
+}
+function loadRecorder(){
+  const raw = localStorage.getItem(STORAGE_RECORDER);
+  if(!raw) return;
+  try{ Object.assign(recorderState, JSON.parse(raw)); } catch(e){}
+}
+function saveRecorder(){
+  recorderState.date = $("#recorderDate").value;
+  localStorage.setItem(STORAGE_RECORDER, JSON.stringify(recorderState));
+}
+function setRecorderDate(){ $("#recorderDate").value = recorderState.date || todayISO(); }
+function ensureRecorderBaseline(){
   let mutated = false;
-  for(const ex of state.exercises){
-    if(ex.name === "未命名項目"){
-      ex.name = "";
-      mutated = true;
-    }
-    if(!Array.isArray(ex.sets)){
-      ex.sets = [];
-      mutated = true;
-    }
-    if(ex.sets.length === 0){
-      ex.sets.push(createSet());
-      mutated = true;
-    }
+  for(const ex of recorderState.exercises){
+    if(ex.name === "未命名項目"){ ex.name = ""; mutated = true; }
+    if(!Array.isArray(ex.sets)){ ex.sets = []; mutated = true; }
+    if(ex.sets.length === 0){ ex.sets.push(createSet()); mutated = true; }
     for(const set of ex.sets){
       if(set.w === undefined){ set.w = ""; mutated = true; }
       if(set.r === undefined){ set.r = ""; mutated = true; }
@@ -174,23 +354,19 @@ function ensureBaselineSets(){
   }
   return mutated;
 }
-
-function addExercise(name=""){ const safeName = (name ?? "").trim(); state.exercises.push({ id: uid(), name: safeName, sets: [createSet()] }); render(); save(); }
-function removeExercise(id){ state.exercises = state.exercises.filter(e=>e.id!==id); render(); save(); }
-function addSet(exId, w="", r="", s=""){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.sets.push(createSet(w, r, s)); render(); save(); }
-function removeSet(exId, setId){
-  const ex = state.exercises.find(e=>e.id===exId);
+function addRecorderExercise(name=""){ const safeName = (name ?? "").trim(); recorderState.exercises.push({ id: uid(), name: safeName, sets: [createSet()] }); renderRecorder(); saveRecorder(); }
+function removeRecorderExercise(id){ recorderState.exercises = recorderState.exercises.filter(e=>e.id!==id); renderRecorder(); saveRecorder(); }
+function addRecorderSet(exId, w="", r="", s=""){ const ex = recorderState.exercises.find(e=>e.id===exId); if(!ex) return; ex.sets.push(createSet(w,r,s)); renderRecorder(); saveRecorder(); }
+function removeRecorderSet(exId, setId){
+  const ex = recorderState.exercises.find(e=>e.id===exId);
   if(!ex) return;
   ex.sets = ex.sets.filter(s=>s.id!==setId);
-  if(ex.sets.length === 0){
-    ex.sets.push(createSet());
-  }
-  render();
-  save();
+  if(ex.sets.length === 0){ ex.sets.push(createSet()); }
+  renderRecorder(); saveRecorder();
 }
-function updateExerciseName(exId, name){ const ex = state.exercises.find(e=>e.id===exId); if(!ex) return; ex.name = name.trim(); save(); }
-function updateSetField(exId, setId, field, value){
-  const ex = state.exercises.find(e=>e.id===exId);
+function updateRecorderName(exId, name){ const ex = recorderState.exercises.find(e=>e.id===exId); if(!ex) return; ex.name = name.trim(); saveRecorder(); }
+function updateRecorderSetField(exId, setId, field, value){
+  const ex = recorderState.exercises.find(e=>e.id===exId);
   if(!ex) return;
   const s = ex.sets.find(s=>s.id===setId);
   if(!s) return;
@@ -198,25 +374,24 @@ function updateSetField(exId, setId, field, value){
   if(field === 'w') cleaned = cleaned.replace(/[^\d.]/g, "");
   else cleaned = cleaned.replace(/\D/g, "");
   s[field] = cleaned;
-  save();
+  saveRecorder();
 }
-
-function changeSetCount(exId, setId, delta){
-  const ex = state.exercises.find(e=>e.id===exId);
+function changeRecorderSetCount(exId, setId, delta){
+  const ex = recorderState.exercises.find(e=>e.id===exId);
   if(!ex) return;
   const set = ex.sets.find(s=>s.id===setId);
   if(!set) return;
   const current = parseInt(set.s || "1", 10) || 1;
   const next = Math.max(1, current + delta);
   set.s = String(next);
-  render();
-  save();
+  renderRecorder();
+  saveRecorder();
 }
-
-function exportMarkdown(){
-  const date = $("#date").value || state.date || todayISO();
+function mdSafe(text){ return String(text ?? "").replace(/\|/g, "\\|").replace(/\n/g, " "); }
+function exportRecorderMarkdown(){
+  const date = $("#recorderDate").value || recorderState.date || todayISO();
   const rows = [];
-  for(const ex of state.exercises){
+  for(const ex of recorderState.exercises){
     const name = ex.name || "未命名項目";
     for(const s of ex.sets){
       const w = (s.w || "").trim();
@@ -240,15 +415,60 @@ function exportMarkdown(){
   ];
   const body = rows.map(row => `| ${mdSafe(row.name)} | ${mdSafe(row.w)} | ${mdSafe(row.r)} | ${mdSafe(row.sets)} |`);
   const out = [...header, ...body].join("\n");
-  $("#noteOut").value = out;
+  $("#recorderNoteOut").value = out;
   return out;
 }
 
-function mdSafe(text){ return String(text ?? "").replace(/\|/g, "\\|").replace(/\n/g, " "); }
-function clearAll(){ if(confirm("清空本次所有資料？此動作不可還原。")){ state.exercises = []; $("#noteOut").value = ""; render(); save(); } }
-async function shareNote(){
-  const txt = $("#noteOut").value || exportMarkdown();
-  const dateToken = state.date || todayISO();
+function recorderToPlanItems(){
+  const items = [];
+  for(const ex of recorderState.exercises){
+    const name = ex.name || "未命名項目";
+    for(const s of ex.sets){
+      const sets = Math.max(1, parseInt(s.s || "1", 10) || 1);
+      const reps = (s.r || "").trim();
+      const rest = "";
+      const w = (s.w || "").trim();
+      const note = w ? `重量 ${w}kg` : "";
+      if(!name && !reps && !w) continue;
+      items.push({ name, sets: String(sets), reps, rest, note });
+    }
+  }
+  return items;
+}
+
+function exportRecorderPlanMarkdown(){
+  const date = $("#recorderDate").value || recorderState.date || todayISO();
+  const title = `FuGym Plan ${date}`;
+  const items = recorderToPlanItems();
+  const header = [
+    "---",
+    `title: ${title}`,
+    "type: fugym-plan",
+    `date: ${date}`,
+    "---",
+    "",
+    `# ${title}`,
+    "",
+    "| Step | Exercise | Sets | Reps | Rest (sec) | Note |",
+    "| --- | --- | --- | --- | --- | --- |"
+  ];
+  const rows = items.map((item, idx) => {
+    return `| ${idx+1} | ${mdSafe(item.name || "") || "-"} | ${mdSafe(item.sets || "")} | ${mdSafe(item.reps || "")} | ${mdSafe(item.rest || "")} | ${mdSafe(item.note || "")} |`;
+  });
+  const out = [...header, ...rows].join("\n");
+  return { md: out, items, title };
+}
+function clearRecorder(){
+  if(confirm("清空本次所有資料？此動作不可還原。")){
+    recorderState.exercises = [];
+    $("#recorderNoteOut").value = "";
+    renderRecorder();
+    saveRecorder();
+  }
+}
+async function shareRecorder(){
+  const txt = $("#recorderNoteOut").value || exportRecorderMarkdown();
+  const dateToken = recorderState.date || todayISO();
   const filename = `${dateToken}-gym.md`;
   try{
     if(navigator.canShare && window.Blob){
@@ -257,14 +477,13 @@ async function shareNote(){
     } else if (navigator.share) {
       await navigator.share({ title: "FuGym 健身筆記", text: txt });
     }
-  }catch(e){ /* user canceled or unsupported */ }
+  }catch(e){ }
 }
-
-function render(){
-  setDateInput();
-  const mutated = ensureBaselineSets();
-  const wrap = $("#exercises"); wrap.innerHTML = "";
-  for(const ex of state.exercises){
+function renderRecorder(){
+  setRecorderDate();
+  const mutated = ensureRecorderBaseline();
+  const wrap = $("#recorderExercises"); wrap.innerHTML = "";
+  for(const ex of recorderState.exercises){
     const card = document.createElement("section");
     card.className = "exercise stack";
     card.innerHTML = `
@@ -280,10 +499,9 @@ function render(){
       </div>
       <div class="set-list"></div>
     `;
-    // Handlers
-    $("input", card).addEventListener("input", (e)=> updateExerciseName(ex.id, e.target.value));
-    $('[data-add="+"]', card).addEventListener("click", ()=> addSet(ex.id));
-    $('[data-del="ex"]', card).addEventListener("click", ()=> removeExercise(ex.id));
+    $("input", card).addEventListener("input", (e)=> updateRecorderName(ex.id, e.target.value));
+    $('[data-add="+"]', card).addEventListener("click", ()=> addRecorderSet(ex.id));
+    $('[data-del="ex"]', card).addEventListener("click", ()=> removeRecorderExercise(ex.id));
 
     const setList = $(".set-list", card);
     for(const s of ex.sets){
@@ -301,68 +519,449 @@ function render(){
         <div class="set-actions"><button class="btn danger" data-del="set">刪除</button></div>
       `;
       const [wInput, rInput] = $$('input', row);
-      wInput.addEventListener('input', (e)=> updateSetField(ex.id, s.id, 'w', e.target.value));
-      rInput.addEventListener('input', (e)=> updateSetField(ex.id, s.id, 'r', e.target.value));
-      $('[data-sets="dec"]', row).addEventListener('click', ()=> changeSetCount(ex.id, s.id, -1));
-      $('[data-sets="inc"]', row).addEventListener('click', ()=> changeSetCount(ex.id, s.id, 1));
-      $('[data-del="set"]', row).addEventListener('click', ()=> removeSet(ex.id, s.id));
+      wInput.addEventListener('input', (e)=> updateRecorderSetField(ex.id, s.id, 'w', e.target.value));
+      rInput.addEventListener('input', (e)=> updateRecorderSetField(ex.id, s.id, 'r', e.target.value));
+      $('[data-sets="dec"]', row).addEventListener('click', ()=> changeRecorderSetCount(ex.id, s.id, -1));
+      $('[data-sets="inc"]', row).addEventListener('click', ()=> changeRecorderSetCount(ex.id, s.id, 1));
+      $('[data-del="set"]', row).addEventListener('click', ()=> removeRecorderSet(ex.id, s.id));
       setList.appendChild(row);
     }
-
     wrap.appendChild(card);
   }
-  if(mutated) save();
+  if(mutated) saveRecorder();
 }
-
 function escapeHtml(s=""){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
-// Boot
-load();
-if(state.exercises.length === 0){
-  for(const name of defaultExercises) addExercise(name);
+loadRecorder();
+if(recorderState.exercises.length === 0){
+  for(const name of defaultExercises) addRecorderExercise(name);
 }
-setDateInput();
-render();
-
-// Global handlers
-$("#date").addEventListener("change", save);
-$("#addExercise").addEventListener("click", ()=> addExercise());
-$("#clearAll").addEventListener("click", clearAll);
-$("#exportBtn").addEventListener("click", ()=> {
-  const note = exportMarkdown();
-  if (note) {
+setRecorderDate();
+renderRecorder();
+$("#recorderDate").addEventListener("change", saveRecorder);
+$("#recorderAddExercise").addEventListener("click", ()=> addRecorderExercise());
+$("#recorderClear").addEventListener("click", clearRecorder);
+$("#recorderExport").addEventListener("click", ()=> {
+  const note = exportRecorderMarkdown();
+  if(note){
     navigator.clipboard.writeText(note).then(
       () => alert("Markdown 已匯出並複製到剪貼簿！"),
       () => alert("複製失敗，請手動選取文字")
     );
   }
 });
-$("#shareNote").addEventListener("click", shareNote);
+$("#recorderOpenTrainer").addEventListener("click", ()=> {
+  const result = exportRecorderPlanMarkdown();
+  if(!result.items.length){
+    alert("目前沒有可送出的動作，請先新增資料。");
+    return;
+  }
+  loadTrainerFromPlan(result.items, result.title);
+  $("#trainerMarkdownInput").value = result.md;
+  showScreen('trainer');
+  renderTrainer();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+$("#recorderShare").addEventListener("click", shareRecorder);
 
-// Quick UX: Enter on 次數 adds a new row for new weight/reps combo
+// Recorder keyboard shortcuts
 document.addEventListener('keydown', (e)=>{
+  if(!$("#screen-recorder").classList.contains('active')) return;
   if(e.key === 'Enter' && e.target.matches('input[aria-label="次數"]')){
     const card = e.target.closest('.exercise');
     const idx = $$('.exercise').indexOf(card);
-    const ex = state.exercises[idx];
-    if(ex) addSet(ex.id);
+    const ex = recorderState.exercises[idx];
+    if(ex) addRecorderSet(ex.id);
     return;
   }
   if(e.key === 'Tab' && !e.shiftKey && e.target.matches('input[aria-label="次數"]')){
     const row = e.target.closest('.set-row');
     const incBtn = row && $('[data-sets="inc"]', row);
-    if(incBtn){
-      e.preventDefault();
-      incBtn.focus();
-    }
+    if(incBtn){ e.preventDefault(); incBtn.focus(); }
     return;
   }
   if(e.key === 'Tab' && e.shiftKey && e.target.matches('button[data-sets]')){
     const row = e.target.closest('.set-row');
     const repsInput = row && $('input[aria-label="次數"]', row);
-    if(repsInput){
-      e.preventDefault();
-      repsInput.focus();
+    if(repsInput){ e.preventDefault(); repsInput.focus(); }
+  }
+});
+
+// Trainer (FuGym Trainer)
+const STORAGE_TRAINER = "fugym.trainer.v1";
+const trainerState = {
+  title: '',
+  plan: [],
+  currentIndex: 0,
+  currentSet: 1,
+  timerRunning: false,
+  timerElapsed: 0,
+  timerStartAt: null,
+  pendingInterval: false,
+  log: [],
+  lastWeight: '',
+  lastActualReps: '',
+  lastRpe: ''
+};
+let timerInterval = null;
+
+function loadTrainer(){
+  const raw = localStorage.getItem(STORAGE_TRAINER);
+  if(!raw) return;
+  try{ Object.assign(trainerState, JSON.parse(raw)); } catch(e){}
+}
+function saveTrainer(){
+  localStorage.setItem(STORAGE_TRAINER, JSON.stringify(trainerState));
+}
+function updateTimerDisplay(){
+  const mins = String(Math.floor(trainerState.timerElapsed / 60)).padStart(2,'0');
+  const secs = String(Math.floor(trainerState.timerElapsed % 60)).padStart(2,'0');
+  $('#timerDisplay').textContent = `${mins}:${secs}`;
+}
+function updateTimerButton(){
+  $('#timerToggle').textContent = trainerState.timerRunning ? '下一組開始' : '開始';
+}
+function finalizePendingInterval(nowMs){
+  if(!trainerState.pendingInterval) return;
+  if(trainerState.timerStartAt){
+    const elapsed = Math.max(0, Math.round((nowMs - trainerState.timerStartAt) / 1000));
+    const lastLog = trainerState.log[trainerState.log.length - 1];
+    if(lastLog){ lastLog.restSeconds = elapsed; }
+  }
+  trainerState.pendingInterval = false;
+}
+function startSetTimer(){
+  const now = Date.now();
+  finalizePendingInterval(now);
+  trainerState.timerRunning = true;
+  trainerState.timerStartAt = now;
+  trainerState.timerElapsed = 0;
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if(!trainerState.timerStartAt) return;
+    trainerState.timerElapsed = (Date.now() - trainerState.timerStartAt) / 1000;
+    updateTimerDisplay();
+  }, 250);
+  updateTimerDisplay();
+  updateTimerButton();
+  saveTrainer();
+}
+function resetTimer(){
+  trainerState.timerRunning = false;
+  trainerState.timerElapsed = 0;
+  trainerState.timerStartAt = null;
+  trainerState.pendingInterval = false;
+  clearInterval(timerInterval);
+  timerInterval = null;
+  updateTimerDisplay();
+  updateTimerButton();
+  saveTrainer();
+}
+
+function loadTrainerFromPlan(items, title){
+  trainerState.title = title || 'FuGym Plan';
+  trainerState.plan = items.map(item => ({
+    name: item.name || '',
+    sets: String(item.sets || '1'),
+    reps: String(item.reps || ''),
+    rest: String(item.rest || ''),
+    note: item.note || ''
+  }));
+  trainerState.currentIndex = 0;
+  trainerState.currentSet = 1;
+  trainerState.log = [];
+  trainerState.lastWeight = '';
+  trainerState.lastActualReps = '';
+  trainerState.lastRpe = '';
+  resetTimer();
+  renderTrainer();
+  saveTrainer();
+}
+
+function parsePlanMarkdown(text){
+  const lines = text.split(/\r?\n/);
+  let title = '';
+  for(const line of lines){
+    const match = line.match(/^title\s*:\s*(.+)$/i);
+    if(match){ title = match[1].trim(); break; }
+  }
+  let headerIndex = lines.findIndex(line => /\|\s*Exercise\s*\|/i.test(line) || /\|\s*動作\s*\|/i.test(line));
+  const items = [];
+  if(headerIndex !== -1){
+    const headerCols = lines[headerIndex].split('|').map(c => c.trim()).filter(c => c.length > 0);
+    const headerLower = headerCols.map(c => c.toLowerCase());
+    const findCol = (keywords) => headerLower.findIndex(h => keywords.some(k => h.includes(k)));
+    const idxExercise = findCol(['exercise', '動作']);
+    const idxSets = findCol(['sets', '組']);
+    const idxReps = findCol(['reps', '次']);
+    const idxRest = findCol(['rest', '休息']);
+    const idxNote = findCol(['note', '備註']);
+    const idxWeight = findCol(['weight', '重量']);
+
+    for(let i = headerIndex + 2; i < lines.length; i++){
+      const line = lines[i].trim();
+      if(!line.startsWith('|')) break;
+      const cols = line.split('|').map(c => c.trim()).filter(c => c.length > 0);
+      if(cols.length < 2) continue;
+      const exercise = (idxExercise !== -1 ? cols[idxExercise] : (cols[1] ?? cols[0] ?? '')).trim();
+      const sets = (idxSets !== -1 ? cols[idxSets] : '').trim();
+      const reps = (idxReps !== -1 ? cols[idxReps] : '').trim();
+      const rest = (idxRest !== -1 ? cols[idxRest] : '').trim();
+      let note = (idxNote !== -1 ? cols[idxNote] : '').trim();
+      const weight = (idxWeight !== -1 ? cols[idxWeight] : '').trim();
+      if(weight){
+        note = note ? `${note}; 重量 ${weight}kg` : `重量 ${weight}kg`;
+      }
+      if(!exercise) continue;
+      items.push({ name: exercise, sets, reps, rest, note });
+    }
+  } else {
+    for(const line of lines){
+      const m = line.match(/^[-*]\s*(.+)$/);
+      if(!m) continue;
+      const parts = m[1].split('|').map(p => p.trim());
+      if(parts.length >= 4){
+        items.push({ name: parts[0], sets: parts[1], reps: parts[2], rest: parts[3], note: parts[4] || '' });
+      }
+    }
+  }
+  return { title, items };
+}
+
+function trainerLogToCsv(){
+  const header = ['date','exercise','set','planned_sets','planned_reps','actual_reps','rest_seconds','rpe','weight','note'];
+  const rows = trainerState.log.map(row => [
+    row.date,
+    row.exercise,
+    row.set,
+    row.plannedSets,
+    row.plannedReps,
+    row.actualReps,
+    row.restSeconds,
+    row.rpe,
+    row.weight,
+    row.note
+  ].map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','));
+  return [header.join(','), ...rows].join('\n');
+}
+
+function renderTrainer(){
+  const totalItems = trainerState.plan.length;
+  const progress = totalItems > 0 ? `${trainerState.currentIndex + 1} / ${totalItems}` : '0 / 0';
+  $('#trainerPlanTitle').textContent = trainerState.title || 'FuGym Plan';
+  $('#trainerProgress').textContent = progress;
+
+  const currentWrap = $('#trainerCurrent');
+  const completeWrap = $('#trainerComplete');
+  if(totalItems === 0){
+    currentWrap.innerHTML = '<p class="muted">尚未載入計畫，請先從 Recorder 或 Markdown 載入。</p>';
+    completeWrap.style.display = 'none';
+    return;
+  }
+
+  if(trainerState.currentIndex >= totalItems){
+    if(trainerState.timerRunning || trainerState.timerElapsed){
+      resetTimer();
+    }
+    currentWrap.innerHTML = '<p class="muted">所有動作已完成！請在下方輸出紀錄。</p>';
+    completeWrap.style.display = 'block';
+    $('#trainerSummary').textContent = `共完成 ${trainerState.log.length} 組，動作 ${totalItems} 項。`;
+    saveTrainer();
+    return;
+  }
+
+  completeWrap.style.display = 'none';
+  const item = trainerState.plan[trainerState.currentIndex];
+  const plannedSets = Math.max(1, parseInt(item.sets || '1', 10) || 1);
+  const plannedReps = item.reps || '';
+  const plannedRest = item.rest || '';
+  const note = item.note || '';
+
+  currentWrap.innerHTML = `
+    <h3>${escapeHtml(item.name || '未命名動作')}</h3>
+    <div class="row">
+      <span class="chip">目標 ${plannedSets} 組 × ${escapeHtml(plannedReps || '-')} 次</span>
+      <span class="chip badge-info">建議休息 ${escapeHtml(plannedRest || '0')} 秒</span>
+      <span class="chip">第 ${trainerState.currentSet} / ${plannedSets} 組</span>
+    </div>
+    <label class="stack">
+      <span class="muted">實際重量 (kg)</span>
+      <input id="trainerWeight" type="text" inputmode="decimal" value="${escapeHtml(trainerState.lastWeight)}" placeholder="可留空" />
+    </label>
+    <label class="stack">
+      <span class="muted">實際次數</span>
+      <input id="trainerActualReps" type="text" inputmode="numeric" value="${escapeHtml(trainerState.lastActualReps || plannedReps)}" placeholder="可留空" />
+    </label>
+    <label class="stack">
+      <span class="muted">吃力程度（選填）</span>
+      <select id="trainerRpe">
+        <option value="">-</option>
+        ${Array.from({length:10}, (_,i)=> `<option value="${i+1}">${i+1}</option>`).join('')}
+      </select>
+    </label>
+    <div class="row">
+      <button class="btn primary" id="trainerCompleteSet">完成一組</button>
+      <button class="btn secondary" id="trainerSkip">跳過此動作</button>
+    </div>
+    <p class="muted">備註：${escapeHtml(note || '無')}</p>
+  `;
+
+  const rpeSelect = $('#trainerRpe');
+  rpeSelect.value = trainerState.lastRpe || '';
+  $('#trainerWeight').addEventListener('input', (e) => { trainerState.lastWeight = e.target.value; saveTrainer(); });
+  $('#trainerActualReps').addEventListener('input', (e) => { trainerState.lastActualReps = e.target.value; saveTrainer(); });
+  rpeSelect.addEventListener('change', (e) => { trainerState.lastRpe = e.target.value; saveTrainer(); });
+
+  $('#trainerCompleteSet').addEventListener('click', () => {
+    const actualReps = $('#trainerActualReps').value.trim();
+    const weight = $('#trainerWeight').value.trim();
+    const rpe = $('#trainerRpe').value;
+    const isLastSetOfPlan = trainerState.currentIndex === trainerState.plan.length - 1
+      && trainerState.currentSet === plannedSets;
+
+    trainerState.log.push({
+      date: new Date().toISOString(),
+      exercise: item.name,
+      set: trainerState.currentSet,
+      plannedSets,
+      plannedReps,
+      actualReps,
+      restSeconds: '',
+      rpe,
+      weight,
+      note
+    });
+    trainerState.pendingInterval = !isLastSetOfPlan && !!trainerState.timerStartAt;
+
+    if(trainerState.currentSet < plannedSets){
+      trainerState.currentSet += 1;
+    } else {
+      trainerState.currentIndex += 1;
+      trainerState.currentSet = 1;
+    }
+    if(isLastSetOfPlan) resetTimer();
+    renderTrainer();
+    saveTrainer();
+  });
+
+  $('#trainerSkip').addEventListener('click', () => {
+    if(confirm('確定要跳過此動作嗎？')){
+      trainerState.currentIndex += 1;
+      trainerState.currentSet = 1;
+      renderTrainer();
+      saveTrainer();
+    }
+  });
+}
+
+function scrollTrainerToBottom(){
+  requestAnimationFrame(() => {
+    const doc = document.documentElement;
+    const target = Math.max(doc.scrollHeight, document.body.scrollHeight);
+    window.scrollTo({ top: target, behavior: 'smooth' });
+  });
+}
+
+loadTrainer();
+renderTrainer();
+updateTimerDisplay();
+updateTimerButton();
+if(trainerState.timerRunning){
+  trainerState.timerRunning = false;
+  const resumeBase = trainerState.timerStartAt || (Date.now() - (trainerState.timerElapsed || 0) * 1000);
+  trainerState.timerStartAt = resumeBase;
+  trainerState.timerRunning = true;
+  if(timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    if(!trainerState.timerStartAt) return;
+    trainerState.timerElapsed = (Date.now() - trainerState.timerStartAt) / 1000;
+    updateTimerDisplay();
+  }, 250);
+  updateTimerButton();
+}
+
+$('#timerToggle').addEventListener('click', startSetTimer);
+$('#timerReset').addEventListener('click', resetTimer);
+
+$('#trainerLoadMarkdown').addEventListener('click', () => {
+  const text = $('#trainerMarkdownInput').value.trim();
+  if(!text){ alert('請先貼上 Markdown 內容'); return; }
+  const parsed = parsePlanMarkdown(text);
+  if(parsed.items.length === 0){ alert('無法解析訓練計畫，請確認格式。'); return; }
+  loadTrainerFromPlan(parsed.items, parsed.title || 'FuGym Plan');
+  scrollTrainerToBottom();
+});
+$('#trainerClear').addEventListener('click', () => {
+  trainerState.title = '';
+  trainerState.plan = [];
+  trainerState.currentIndex = 0;
+  trainerState.currentSet = 1;
+  trainerState.log = [];
+  trainerState.lastWeight = '';
+  trainerState.lastActualReps = '';
+  trainerState.lastRpe = '';
+  resetTimer();
+  saveTrainer();
+  renderTrainer();
+});
+
+$('#trainerDownloadCsv').addEventListener('click', () => {
+  const csv = trainerLogToCsv();
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `fugym-trainer-${todayISO()}.csv`;
+  link.click();
+  URL.revokeObjectURL(link.href);
+});
+$('#trainerShareCsv').addEventListener('click', async () => {
+  const csv = trainerLogToCsv();
+  const filename = `fugym-trainer-${todayISO()}.csv`;
+  try{
+    if(navigator.canShare && window.Blob){
+      const file = new File([csv], filename, { type: 'text/csv' });
+      await navigator.share({ title: 'FuGym 訓練紀錄', text: 'CSV 訓練紀錄', files: [file] });
+      return;
+    }
+    if(navigator.share){
+      await navigator.share({ title: 'FuGym 訓練紀錄', text: csv });
+      return;
+    }
+    await navigator.clipboard.writeText(csv);
+    alert('CSV 已複製到剪貼簿');
+  }catch(e){
+    alert('分享失敗，可改用下載 CSV');
+  }
+});
+
+const dropZone = $('#trainerDrop');
+dropZone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  dropZone.classList.add('dragging');
+});
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
+dropZone.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dropZone.classList.remove('dragging');
+  if(e.dataTransfer.files && e.dataTransfer.files.length){
+    const file = e.dataTransfer.files[0];
+    const reader = new FileReader();
+    reader.onload = () => {
+      const parsed = parsePlanMarkdown(reader.result);
+      if(parsed.items.length === 0){ alert('無法解析訓練計畫，請確認格式。'); return; }
+      $('#trainerMarkdownInput').value = reader.result;
+      loadTrainerFromPlan(parsed.items, parsed.title || file.name.replace(/\.md$/i, ''));
+      scrollTrainerToBottom();
+    };
+    reader.readAsText(file);
+  } else {
+    const text = e.dataTransfer.getData('text/plain');
+    if(text){
+      $('#trainerMarkdownInput').value = text;
+      const parsed = parsePlanMarkdown(text);
+      if(parsed.items.length === 0){ alert('無法解析訓練計畫，請確認格式。'); return; }
+      loadTrainerFromPlan(parsed.items, parsed.title || 'FuGym Plan');
+      scrollTrainerToBottom();
     }
   }
 });
