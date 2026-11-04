@@ -3,968 +3,1880 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="theme-color" content="#F3F5F7" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0F1215" media="(prefers-color-scheme: dark)" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
 <title>FuGym</title>
 <style>
 :root {
-  --paper: #FFFFFF;
-  --silver: #D8DEE9;
-  --graphite: #2E3440;
-  --teal: #5EBCBF;
-  --indigo: #81A1C1;
-  --emerald: #A3BE8C;
-  --amber: #EBCB8B;
-  --coral: #D08770;
-  --plum: #B48EAD;
-  --slate: #708090;
-  --teal-50: rgba(94, 188, 191, 0.12);
-  --indigo-50: rgba(129, 161, 193, 0.15);
-  --emerald-50: rgba(163, 190, 140, 0.18);
-  --amber-50: rgba(235, 203, 139, 0.18);
-  --coral-50: rgba(208, 135, 112, 0.18);
-  --plum-50: rgba(180, 142, 173, 0.18);
-  --slate-50: rgba(112, 128, 144, 0.14);
-  --pad: 12px;
-  --radius: 16px;
-  --gap: 10px;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC", Arial;
+  color-scheme: light dark;
+  --bg: #F3F5F7;
+  --surface: #FFFFFF;
+  --surface-2: #F0F3F6;
+  --surface-3: #E3E8ED;
+  --line: #E2E7EC;
+  --text: #161B21;
+  --text-2: #56616D;
+  --text-3: #8D97A2;
+  --accent: #139A9C;
+  --accent-strong: #0C7E80;
+  --accent-ink: #FFFFFF;
+  --accent-soft: rgba(19, 154, 156, 0.12);
+  --done: #2F9D5C;
+  --done-ink: #FFFFFF;
+  --done-soft: rgba(47, 157, 92, 0.11);
+  --warn: #D9822B;
+  --warn-soft: rgba(217, 130, 43, 0.16);
+  --danger: #D0453A;
+  --toast-bg: #1E252C;
+  --toast-fg: #FFFFFF;
+  --toast-act: #6FE3E1;
+  --shadow: 0 1px 2px rgba(16, 24, 32, 0.05), 0 4px 14px rgba(16, 24, 32, 0.05);
+  --shadow-lg: 0 -2px 24px rgba(16, 24, 32, 0.12);
+  --r-lg: 18px;
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --font: system-ui, -apple-system, "SF Pro Text", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif;
 }
-html, body {
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0F1215;
+    --surface: #181C21;
+    --surface-2: #21272D;
+    --surface-3: #2C333A;
+    --line: #2A3138;
+    --text: #E9EDF0;
+    --text-2: #A6B0BA;
+    --text-3: #6F7A85;
+    --accent: #3CC6C4;
+    --accent-strong: #5AD6D4;
+    --accent-ink: #052324;
+    --accent-soft: rgba(60, 198, 196, 0.14);
+    --done: #42BE76;
+    --done-ink: #04210F;
+    --done-soft: rgba(66, 190, 118, 0.13);
+    --warn: #F0A14E;
+    --warn-soft: rgba(240, 161, 78, 0.16);
+    --danger: #F06C60;
+    --toast-bg: #E9EDF0;
+    --toast-fg: #11161B;
+    --toast-act: #0C7E80;
+    --shadow: 0 0 0 1px rgba(255, 255, 255, 0.03);
+    --shadow-lg: 0 -2px 24px rgba(0, 0, 0, 0.5);
+  }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
   margin: 0;
-  padding: 0;
-  background: var(--paper);
-  color: var(--graphite);
+  background: var(--bg);
+  color: var(--text);
   font-family: var(--font);
+  font-size: 15px;
+  line-height: 1.45;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
 }
-body { min-height: 100vh; }
+body.lock { overflow: hidden; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; touch-action: manipulation; }
+button:disabled { opacity: .4; cursor: default; }
+input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.ic { width: 20px; height: 20px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.num { font-variant-numeric: tabular-nums; }
+.muted { color: var(--text-3); }
+.wrap { max-width: 640px; margin: 0 auto; padding: 0 16px; }
 
-.screen { display: none; min-height: 100vh; flex-direction: column; }
-.screen.active { display: flex; }
+/* App bar */
+.appbar {
+  position: sticky; top: 0; z-index: 20;
+  background: var(--bg);
+  background: color-mix(in srgb, var(--bg) 86%, transparent);
+  -webkit-backdrop-filter: saturate(1.6) blur(14px);
+  backdrop-filter: saturate(1.6) blur(14px);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.appbar .wrap { display: flex; align-items: center; gap: 8px; height: 54px; }
+.brand { display: flex; align-items: center; gap: 9px; font-weight: 800; font-size: 18px; letter-spacing: -.02em; }
+.brand-mark { width: 30px; height: 30px; border-radius: 9px; background: var(--accent); color: var(--accent-ink); display: grid; place-items: center; }
+.brand-mark .ic { width: 18px; height: 18px; stroke-width: 2.4; }
+.spacer { flex: 1; }
+.clock-pill { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 999px; background: var(--accent-soft); color: var(--accent-strong); font-weight: 750; font-size: 14px; }
+.clock-pill .ic { width: 16px; height: 16px; }
+.icon-btn { width: 40px; height: 40px; border-radius: 12px; display: inline-grid; place-items: center; color: var(--text-2); flex: none; }
+.icon-btn:active { background: var(--surface-3); }
 
-main { flex: 1; padding: 20px 16px 24px; }
-.row { display: flex; gap: var(--gap); align-items: center; flex-wrap: wrap; }
-.stack { display: flex; flex-direction: column; gap: var(--gap); }
-.grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-.center { align-items: center; justify-content: center; text-align: center; }
-@media (min-width: 720px) { .grid { grid-template-columns: 1fr 1fr; } }
+/* Page head */
+main { padding-bottom: calc(132px + var(--safe-b)); }
+.page-head { padding: 6px 0 14px; }
+.date-btn { position: relative; display: inline-flex; align-items: center; gap: 6px; color: var(--text-2); font-size: 14px; font-weight: 650; padding: 5px 10px 5px 8px; margin-left: -8px; border-radius: 999px; }
+.date-btn .ic { width: 16px; height: 16px; }
+.date-btn:active { background: var(--surface-3); }
+.date-btn input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: 0; padding: 0; }
+h1 { font-size: 30px; line-height: 1.15; letter-spacing: -.02em; margin: 2px 0 0; font-weight: 800; }
 
-button, input, select, textarea { font: inherit; }
+/* Stats */
+.stats { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: 14px 16px; margin-bottom: 16px; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat b { display: block; font-size: 22px; font-weight: 800; letter-spacing: -.01em; line-height: 1.2; }
+.stat span { font-size: 12px; color: var(--text-3); font-weight: 650; }
+.progress { height: 6px; border-radius: 99px; background: var(--surface-3); margin-top: 12px; overflow: hidden; }
+.progress i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: inherit; transition: width .3s ease; }
 
-.card {
-  background: var(--paper);
-  border: 1px solid var(--silver);
-  border-radius: var(--radius);
-  padding: var(--pad);
-}
+/* Empty state */
+.empty { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: 30px 20px 20px; text-align: center; }
+.empty-icon { width: 64px; height: 64px; border-radius: 20px; background: var(--accent-soft); color: var(--accent-strong); display: grid; place-items: center; margin: 0 auto 14px; }
+.empty-icon .ic { width: 32px; height: 32px; }
+.empty h2 { margin: 0 0 6px; font-size: 20px; }
+.empty p { margin: 0 auto 18px; color: var(--text-2); max-width: 300px; font-size: 14px; }
+.empty .btn { width: 100%; margin-top: 8px; }
 
-.btn {
-  border: 1px solid var(--silver);
-  background: var(--paper);
-  color: var(--graphite);
-  border-radius: 12px;
-  padding: 12px 16px;
-  min-height: 44px;
-  font-size: 16px;
-  cursor: pointer;
-}
-.btn:active { transform: scale(.98); }
-.btn.primary { background: var(--teal); color: #fff; border-color: var(--teal); }
-.btn.secondary { background: var(--paper); border-color: var(--silver); }
-.btn.info { background: var(--indigo); color: #fff; border-color: var(--indigo); }
-.btn.danger { background: var(--paper); border-color: var(--coral); color: var(--coral); }
-.btn.ghost { background: var(--paper); border-style: dashed; border-color: var(--silver); }
+/* Buttons */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding: 0 18px; border-radius: 14px; font-weight: 750; font-size: 16px; background: var(--surface); color: var(--text); box-shadow: inset 0 0 0 1px var(--line); white-space: nowrap; }
+.btn .ic { width: 19px; height: 19px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+.btn.soft { background: var(--surface-2); box-shadow: none; }
+.btn.danger { color: var(--danger); }
+.btn.block { width: 100%; }
+.btn.lg { height: 56px; font-size: 17px; border-radius: 16px; }
+.btn.sm { height: 36px; padding: 0 14px; font-size: 14px; border-radius: 11px; }
+.btn.grow { flex: 1; }
+.btn:active, .pill:active, .check:active, .next-btn:active { transform: scale(.97); }
 
-.toolbar {
-  background: var(--paper);
-  border-top: 1px solid var(--silver);
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-top: auto;
-}
+/* Exercise cards */
+.ex-list { display: flex; flex-direction: column; gap: 14px; }
+.ex-card { background: var(--surface); border-radius: var(--r-lg); box-shadow: var(--shadow); padding: 12px 10px 6px; }
+.ex-head { display: flex; align-items: flex-start; gap: 10px; padding: 2px 2px 8px 6px; }
+.ex-num { width: 28px; height: 28px; border-radius: 9px; background: var(--surface-2); display: grid; place-items: center; font-weight: 800; font-size: 13px; color: var(--text-2); flex: none; margin-top: 1px; }
+.ex-num .ic { width: 16px; height: 16px; stroke-width: 3; }
+.ex-card.complete .ex-num { background: var(--done); color: var(--done-ink); }
+.ex-title { flex: 1; min-width: 0; text-align: left; display: block; }
+.ex-name { display: block; font-size: 17px; font-weight: 750; line-height: 1.3; word-break: break-word; }
+.ex-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 3px; font-size: 12.5px; color: var(--text-3); align-items: center; }
+.ex-meta .ic { width: 13px; height: 13px; vertical-align: -2px; margin-right: 2px; }
+.tag { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 1px 7px; border-radius: 6px; background: var(--surface-2); color: var(--text-2); white-space: nowrap; }
 
-.topbar {
-  padding: 12px 16px;
-  border-bottom: 1px solid var(--silver);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.topbar-meta {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.tabs {
-  display: inline-flex;
-  gap: 6px;
-  padding: 4px;
-  border: 1px solid var(--silver);
-  border-radius: 999px;
-  background: var(--paper);
-}
-.tab {
-  border: 1px solid transparent;
-  background: var(--paper);
-  color: var(--graphite);
-  border-radius: 999px;
-  padding: 6px 12px;
-  min-height: auto;
-  font-size: 14px;
-}
-.tab.active {
-  background: var(--teal-50);
-  border-color: var(--teal);
-}
-
-h1, h2, h3 { margin: 0; }
-.sub { font-size: 12px; color: var(--slate); }
-.muted { color: var(--slate); }
-.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-
-input, textarea, select {
-  border: 1px solid var(--silver);
-  background: var(--paper);
-  border-radius: 10px;
-  padding: 8px 10px;
-  color: var(--graphite);
-}
-input:focus, button:focus, textarea:focus, select:focus {
-  outline: 2px solid var(--teal-50);
-  box-shadow: 0 0 0 1px var(--silver) inset;
-}
-
-.chip {
-  display: inline-flex;
-  align-items: center;
-  font-size: 12px;
-  color: var(--graphite);
-  background: var(--teal-50);
-  border: 1px solid var(--silver);
-  padding: 4px 8px;
-  min-height: 28px;
-  border-radius: 999px;
-}
-.badge-info { background: var(--indigo-50); }
-.chip-input {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  min-height: 28px;
-  border-radius: 999px;
-  background: var(--teal-50);
-  border: 1px solid var(--silver);
-  font-size: 12px;
-  color: var(--graphite);
-}
-.chip-input input {
-  border: none;
-  background: transparent;
-  padding: 0;
-  min-height: auto;
-  height: 18px;
-  line-height: 1;
-  font-size: 12px;
-  color: inherit;
+.set-head, .set-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) 78px 64px 44px; gap: 6px; align-items: center; }
+.set-head { font-size: 11.5px; font-weight: 750; color: var(--text-3); padding: 0 4px 4px; }
+.set-head span { text-align: center; }
+.set-row { padding: 4px; border-radius: 12px; transition: background .2s; }
+.set-row + .set-row { margin-top: 2px; }
+.set-row.done { background: var(--done-soft); }
+.set-row.next .set-no { color: var(--accent-strong); background: var(--accent-soft); }
+.set-no { height: 36px; border-radius: 9px; font-weight: 800; color: var(--text-2); font-size: 14px; }
+.set-no:active { background: var(--surface-3); }
+.set-prev { height: 36px; font-size: 13px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 9px; padding: 0 4px; font-variant-numeric: tabular-nums; }
+.set-prev:not(:disabled):active { background: var(--surface-3); }
+.set-prev:disabled { opacity: 1; }
+.set-in { width: 100%; height: 40px; border: 0; border-radius: 10px; background: var(--surface-2); text-align: center; font-size: 17px; font-weight: 750; font-variant-numeric: tabular-nums; outline: none; padding: 0 4px; -webkit-appearance: none; appearance: none; }
+.set-in:focus { box-shadow: inset 0 0 0 2px var(--accent); background: var(--surface); }
+.set-in::placeholder { color: var(--text-3); font-weight: 600; opacity: .8; }
+.set-row.done .set-in { background: transparent; }
+.check { width: 42px; height: 40px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; color: var(--text-3); justify-self: end; transition: background .15s, color .15s; }
+.check .ic { stroke-width: 3; }
+.set-row.done .check { background: var(--done); color: var(--done-ink); }
+.set-row.next .check { box-shadow: inset 0 0 0 2px var(--accent); color: var(--accent-strong); }
+.add-set { width: 100%; height: 42px; margin-top: 2px; border-radius: 12px; color: var(--accent-strong); font-weight: 750; font-size: 15px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.add-set .ic { width: 18px; height: 18px; }
+.add-set:active { background: var(--accent-soft); }
+.no-sets { text-align: center; color: var(--text-3); font-size: 13px; padding: 8px 0 2px; }
+@media (max-width: 352px) {
+  .set-head, .set-row { grid-template-columns: 30px 0 minmax(0, 1fr) 60px 42px; gap: 5px; }
+  .set-prev, .set-head span:nth-child(2) { visibility: hidden; }
 }
 
-/* Recorder styles */
-.exercise { background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); padding: var(--pad); }
-.ex-header { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-.ex-title { flex: 1; display: flex; gap: 8px; align-items: center; min-width: 200px; }
-.ex-title input { flex: 1; border: none; border-bottom: 1px dashed var(--silver); padding: 6px 4px; font-weight: 600; min-width: 120px; font-size: 16px; }
+.add-ex { width: 100%; margin-top: 14px; height: 56px; border-radius: var(--r-lg); border: 1.5px dashed var(--surface-3); color: var(--accent-strong); font-weight: 750; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.add-ex:active { background: var(--accent-soft); }
 
-.set-list { display: flex; flex-direction: column; gap: 12px; padding: 0; margin: 0; }
-.set-row { position: relative; display: grid; grid-template-columns: minmax(88px, 1fr) minmax(88px, 1fr) auto auto; gap: 10px; align-items: center; padding: 12px 14px; background: var(--paper); border: 1px solid var(--silver); border-radius: var(--radius); }
-.set-input { display: flex; align-items: center; }
-input.small { width: 100%; box-sizing: border-box; border: 1px solid var(--silver); background: var(--paper); border-radius: 10px; outline: none; color: var(--graphite); font-size: 18px; padding: 8px 10px; min-height: 42px; text-align: center; }
-.set-actions { display: flex; justify-content: flex-end; align-items: center; }
-.sets-control { display: inline-flex; align-items: center; gap: 10px; background: var(--paper); border: 1px solid var(--silver); border-radius: 999px; padding: 6px 12px; }
-.sets-value { min-width: 24px; text-align: center; font-weight: 600; font-size: 18px; }
-.btn.circle { width: 32px; height: 32px; min-height: 32px; padding: 0; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; }
+/* Dock */
+.dock { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 18px 16px calc(12px + var(--safe-b)); background: linear-gradient(to top, var(--bg) 62%, transparent); pointer-events: none; }
+.dock-inner { max-width: 608px; margin: 0 auto; pointer-events: auto; }
+body.typing .dock { display: none; }
+.dock-row { display: flex; gap: 10px; }
+.next-btn { width: 100%; height: 64px; border-radius: 18px; background: var(--accent); color: var(--accent-ink); display: flex; align-items: center; gap: 12px; padding: 0 14px 0 12px; text-align: left; }
+.next-ic { width: 40px; height: 40px; border-radius: 12px; background: rgba(255,255,255,.18); display: grid; place-items: center; flex: none; }
+.next-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.next-main small { font-size: 12px; font-weight: 700; opacity: .85; }
+.next-main b { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.next-val { font-weight: 800; font-size: 15px; white-space: nowrap; }
 
-@media (max-width: 520px) {
-  .set-row { grid-template-columns: minmax(70px, 1fr) minmax(70px, 1fr) auto auto; gap: 8px; }
-  .set-actions { justify-content: flex-start; }
-  .sets-control { gap: 8px; padding: 5px 10px; }
-  .btn.circle { width: 30px; height: 30px; min-height: 30px; font-size: 16px; }
+.rest-bar { position: relative; overflow: hidden; display: flex; align-items: center; gap: 6px; padding: 8px; border-radius: 18px; background: var(--surface); box-shadow: var(--shadow-lg), inset 0 0 0 1px var(--line); }
+.rest-fill { position: absolute; inset: 0; background: var(--accent-soft); transform-origin: left center; transition: transform .25s linear; }
+.rest-main { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; padding: 2px 8px; text-align: left; }
+.rest-label { font-size: 12px; font-weight: 750; color: var(--accent-strong); }
+.rest-time { font-size: 26px; font-weight: 800; line-height: 1.1; letter-spacing: -.01em; }
+.rest-next { font-size: 12.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.pill { position: relative; height: 42px; min-width: 50px; padding: 0 10px; border-radius: 12px; background: var(--surface-2); font-weight: 750; font-size: 14px; white-space: nowrap; }
+.pill.accent { background: var(--accent); color: var(--accent-ink); }
+.rest-bar.over .rest-fill { background: var(--warn-soft); }
+.rest-bar.over .rest-label { color: var(--warn); }
+
+/* Toast */
+.toast { position: fixed; left: 50%; bottom: calc(100px + var(--safe-b)); z-index: 70; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; background: var(--toast-bg); color: var(--toast-fg); border-radius: 14px; padding: 10px 10px 10px 16px; display: flex; gap: 10px; align-items: center; font-size: 14px; font-weight: 650; box-shadow: 0 8px 30px rgba(0,0,0,.25); transition: opacity .2s, transform .2s; width: max-content; max-width: calc(100vw - 32px); min-height: 44px; }
+.toast.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+.toast button { color: var(--toast-act); font-weight: 800; padding: 6px 8px; border-radius: 8px; }
+
+/* Sheets */
+.layer { position: fixed; inset: 0; z-index: 50; display: none; }
+.layer.open { display: block; }
+.backdrop { position: absolute; inset: 0; background: rgba(8, 12, 16, .45); animation: fade .2s ease; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; margin: 0 auto; max-width: 640px; max-height: 90vh; max-height: 90dvh; display: flex; flex-direction: column; background: var(--surface); border-radius: 22px 22px 0 0; box-shadow: var(--shadow-lg); animation: up .28s cubic-bezier(.2, .8, .2, 1); padding-bottom: var(--safe-b); }
+.layer.static .sheet, .layer.static .backdrop { animation: none; }
+.sheet.tall { height: 90vh; height: 90dvh; }
+.grabber { width: 38px; height: 5px; border-radius: 9px; background: var(--surface-3); margin: 8px auto 0; flex: none; }
+.sheet-head { display: flex; align-items: center; gap: 8px; padding: 10px 12px 10px 18px; flex: none; }
+.sheet-head h3 { flex: 1; font-size: 19px; margin: 0; font-weight: 800; min-width: 0; }
+.sheet-head p { margin: 2px 0 0; font-size: 13px; color: var(--text-3); }
+.sheet-body { flex: 1; overflow-y: auto; padding: 0 18px 14px; overscroll-behavior: contain; }
+.sheet-foot { flex: none; padding: 12px 16px 14px; border-top: 1px solid var(--line); display: flex; gap: 10px; flex-wrap: wrap; }
+@keyframes up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes fade { from { opacity: 0; } }
+@media (min-width: 720px) {
+  .sheet { bottom: auto; top: 50%; transform: translateY(-50%); border-radius: 22px; max-height: 82vh; animation: pop .22s ease; padding-bottom: 0; }
+  .sheet.tall { height: 82vh; }
+  .grabber { display: none; }
+  @keyframes pop { from { opacity: 0; transform: translateY(-47%); } to { opacity: 1; transform: translateY(-50%); } }
 }
 
-.drop-zone {
-  border: 2px dashed var(--silver);
-  background: rgba(129, 161, 193, 0.08);
-  text-align: center;
-  transition: background 0.2s ease, border-color 0.2s ease;
-}
-.drop-zone.dragging { border-color: var(--teal); background: var(--teal-50); }
+.menu { display: flex; flex-direction: column; }
+.menu-item { display: flex; align-items: center; gap: 14px; padding: 13px 4px; border-bottom: 1px solid var(--line); font-size: 16px; font-weight: 650; text-align: left; width: 100%; }
+.menu-item:last-child { border-bottom: 0; }
+.menu-item .ic { color: var(--text-2); }
+.menu-item small { display: block; font-size: 12.5px; color: var(--text-3); font-weight: 500; }
+.menu-item.danger, .menu-item.danger .ic { color: var(--danger); }
+.menu-item:active { background: var(--surface-2); }
+.section-label { font-size: 12px; font-weight: 800; color: var(--text-3); letter-spacing: .06em; margin: 16px 0 8px; }
+.section-label:first-child { margin-top: 2px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { height: 36px; padding: 0 14px; border-radius: 999px; background: var(--surface-2); font-weight: 700; font-size: 14px; color: var(--text-2); white-space: nowrap; }
+.chip.on { background: var(--accent); color: var(--accent-ink); }
+.hint { font-size: 13px; color: var(--text-3); margin: 12px 0 0; }
+.field { width: 100%; border: 0; border-radius: 12px; background: var(--surface-2); padding: 12px 14px; font-size: 16px; outline: none; -webkit-appearance: none; appearance: none; }
+.field:focus { box-shadow: inset 0 0 0 2px var(--accent); }
+textarea.field { min-height: 170px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13px; line-height: 1.5; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); font-weight: 650; }
+.toggle-row small { display: block; font-size: 12.5px; color: var(--text-3); font-weight: 500; }
+.switch { -webkit-appearance: none; appearance: none; width: 50px; height: 30px; border-radius: 99px; background: var(--surface-3); position: relative; cursor: pointer; transition: background .2s; flex: none; margin: 0; }
+.switch::after { content: ""; position: absolute; top: 3px; left: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.25); transition: transform .2s; }
+.switch:checked { background: var(--accent); }
+.switch:checked::after { transform: translateX(20px); }
 
-/* Trainer styles */
-.sticky-timer {
-  position: sticky;
-  top: 0;
-  background: var(--paper);
-  border-bottom: 1px solid var(--silver);
-  padding: 12px 16px;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.timer-display { font-size: 24px; font-weight: 600; }
-.progress-text { font-size: 12px; color: var(--slate); }
+/* Picker */
+.search { margin: 0 16px 10px; display: flex; align-items: center; gap: 8px; height: 46px; padding: 0 12px; border-radius: 13px; background: var(--surface-2); color: var(--text-3); flex: none; }
+.search input { flex: 1; border: 0; background: transparent; outline: none; font-size: 16px; color: var(--text); min-width: 0; -webkit-appearance: none; appearance: none; }
+.search input::-webkit-search-cancel-button { display: none; }
+.cat-row { display: flex; gap: 8px; overflow-x: auto; padding: 0 16px 10px; scrollbar-width: none; flex: none; }
+.cat-row::-webkit-scrollbar { display: none; }
+.cat-row .chip { flex: none; }
+.pick-group { font-size: 12px; font-weight: 800; color: var(--text-3); margin: 14px 4px 2px; letter-spacing: .06em; }
+.pick-group:first-child { margin-top: 2px; }
+.pick-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 6px; border-radius: 12px; text-align: left; }
+.pick-row:active { background: var(--surface-2); }
+.pick-check { width: 26px; height: 26px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--surface-3); display: grid; place-items: center; flex: none; color: transparent; transition: background .15s; }
+.pick-check .ic { width: 16px; height: 16px; stroke-width: 3; }
+.pick-row.sel .pick-check { background: var(--accent); box-shadow: none; color: var(--accent-ink); }
+.pick-row.add .pick-check { background: var(--accent-soft); box-shadow: none; color: var(--accent-strong); }
+.pick-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.pick-name { font-weight: 700; font-size: 16px; }
+.pick-sub { font-size: 12.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick-empty { text-align: center; color: var(--text-3); padding: 30px 10px; font-size: 14px; }
 
+/* History & summary */
+.hist { padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
+.hist:last-child { border-bottom: 0; }
+.hist b { font-size: 15px; }
+.hist-names { font-size: 13.5px; color: var(--text-2); grid-column: 1; }
+.hist-meta { font-size: 12.5px; color: var(--text-3); grid-column: 1; }
+.hist .btn { grid-column: 2; grid-row: 1 / span 3; }
+.sum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 8px; }
+.sum-card { background: var(--surface-2); border-radius: 14px; padding: 12px 14px; }
+.sum-card b { font-size: 22px; display: block; font-weight: 800; }
+.sum-card span { font-size: 12px; color: var(--text-3); font-weight: 700; }
+.sum-ex { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.sum-ex:last-child { border-bottom: 0; }
+.sum-ex b { font-size: 15px; }
+.sum-sets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.sum-sets span { font-size: 13px; padding: 3px 8px; border-radius: 8px; background: var(--surface-2); font-weight: 650; font-variant-numeric: tabular-nums; }
+.sheet-foot .btn { flex: 1 1 40%; }
+
+/* Focus mode */
+.focus { position: fixed; inset: 0; z-index: 40; background: var(--bg); display: none; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: var(--safe-b); }
+.focus.open { display: flex; animation: up .3s cubic-bezier(.2, .8, .2, 1); }
+.focus-inner { max-width: 520px; width: 100%; margin: 0 auto; flex: 1; display: flex; flex-direction: column; padding: 0 16px 16px; overflow-y: auto; }
+.focus-top { display: flex; align-items: center; height: 56px; gap: 4px; flex: none; }
+.focus-top .end-btn { height: 36px; padding: 0 12px; border-radius: 10px; font-weight: 750; color: var(--danger); font-size: 14px; }
+.focus-title { flex: 1; min-width: 0; text-align: center; }
+.focus-title small { display: block; font-size: 12px; color: var(--text-3); font-weight: 750; }
+.focus-ex { display: flex; align-items: center; gap: 6px; margin: 2px 0 6px; }
+.focus-ex h2 { flex: 1; min-width: 0; margin: 0; text-align: center; font-size: 22px; font-weight: 800; letter-spacing: -.01em; line-height: 1.25; word-break: break-word; }
+.dots { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; margin: 4px 0 6px; }
+.dot { width: 9px; height: 9px; border-radius: 50%; background: var(--surface-3); }
+.dot.done { background: var(--done); }
+.dot.cur { background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.ring-wrap { position: relative; width: min(64vw, 250px, 33vh); aspect-ratio: 1; margin: 10px auto 12px; flex: none; }
+.ring { width: 100%; height: 100%; transform: rotate(-90deg); display: block; }
+.ring circle { fill: none; stroke-width: 11; }
+.ring .track { stroke: var(--surface-3); }
+.ring .bar { stroke: var(--accent); stroke-linecap: round; transition: stroke-dashoffset .3s linear, stroke .2s; }
+.ring.idle .bar { stroke: var(--done); }
+.focus.over .ring .bar { stroke: var(--warn); }
+.ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 12%; }
+.ring-label { font-size: 13px; font-weight: 800; color: var(--text-3); letter-spacing: .04em; }
+.focus.resting .ring-label { color: var(--accent-strong); }
+.focus.over .ring-label { color: var(--warn); }
+.ring-time { font-size: clamp(42px, 13vw, 60px); font-weight: 800; letter-spacing: -.03em; line-height: 1.08; font-variant-numeric: tabular-nums; }
+.ring-time.word { font-size: clamp(30px, 9vw, 40px); }
+.ring-time .ic { width: 56px; height: 56px; stroke-width: 2.6; color: var(--done); }
+.ring-sub { font-size: 13px; color: var(--text-3); font-weight: 650; }
+.rest-ctrls { display: flex; gap: 10px; justify-content: center; margin: 0 0 14px; }
+.rest-ctrls .pill { min-width: 72px; height: 44px; font-size: 15px; }
+.stepper-label-row { font-size: 12px; font-weight: 800; color: var(--text-3); letter-spacing: .06em; margin: 2px 2px 8px; }
+.steppers { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.stepper { background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); padding: 10px 8px 8px; }
+.stepper-label { font-size: 12px; font-weight: 750; color: var(--text-3); text-align: center; }
+.stepper-row { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+.stepper-row button { width: 42px; height: 46px; border-radius: 12px; background: var(--surface-2); display: grid; place-items: center; flex: none; }
+.stepper-row button:active { background: var(--surface-3); }
+.stepper-row input { flex: 1; min-width: 0; width: 100%; text-align: center; border: 0; background: transparent; font-size: 30px; font-weight: 800; outline: none; font-variant-numeric: tabular-nums; padding: 0; border-radius: 10px; }
+.stepper-row input:focus { box-shadow: inset 0 0 0 2px var(--accent); }
+.stepper-row input::placeholder { color: var(--text-3); }
+.focus-cta { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+.focus-cta .btn.primary { height: 62px; font-size: 18px; border-radius: 18px; }
+.focus-cta .btn.primary .ic { width: 22px; height: 22px; stroke-width: 3; }
+.focus-hint { text-align: center; font-size: 13px; color: var(--text-3); margin: 10px 0 0; }
 </style>
 </head>
 <body>
-  <section id="screen-recorder" class="screen active" data-screen="recorder">
-    <div class="topbar">
-      <div class="row" style="justify-content: space-between;">
-        <div class="tabs">
-          <button class="tab" data-go="recorder">Plan</button>
-          <button class="tab" data-go="trainer">Train</button>
-        </div>
-      </div>
-      <div class="row topbar-meta">
-        <label class="chip-input">
-          <span>日期</span>
-          <input id="recorderDate" type="date" />
-        </label>
-      </div>
+  <header class="appbar">
+    <div class="wrap">
+      <div class="brand"><span class="brand-mark" id="brandMark"></span>FuGym</div>
+      <div class="spacer"></div>
+      <span class="clock-pill num" id="elapsedPill" hidden></span>
+      <button class="icon-btn" data-act="menu" aria-label="選單" id="menuBtn"></button>
     </div>
-    <main id="recorderApp" class="stack">
-      <section class="grid" id="recorderExercises"></section>
-    </main>
-    <div class="toolbar">
-      <button class="btn primary" id="recorderAddExercise">新增項目</button>
-      <button class="btn danger" id="recorderClear">清空本次</button>
-      <button class="btn info" id="recorderExport">匯出 Markdown</button>
-      <button class="btn" id="recorderOpenTrainer">送到 Trainer</button>
-      <button class="btn secondary" id="recorderShare">分享</button>
+  </header>
+
+  <main class="wrap" id="main">
+    <div class="page-head">
+      <label class="date-btn" id="dateBtn">
+        <span id="dateIcon"></span><span id="dateLabel"></span>
+        <input type="date" id="dateInput" aria-label="訓練日期" />
+      </label>
+      <h1 id="pageTitle">今日計畫</h1>
     </div>
-    <textarea id="recorderNoteOut" style="display: none;"></textarea>
-  </section>
+    <section class="stats" id="stats" hidden></section>
+    <section id="empty" hidden></section>
+    <section class="ex-list" id="exList"></section>
+    <button class="add-ex" id="addEx" data-act="open-picker" hidden></button>
+  </main>
 
-  <section id="screen-trainer" class="screen" data-screen="trainer">
-    <div class="sticky-timer" id="trainerTimerBar">
-      <div class="row" style="justify-content: space-between;">
-        <div class="tabs">
-          <button class="tab" data-go="recorder">Plan</button>
-          <button class="tab" data-go="trainer">Train</button>
-        </div>
-        <div class="timer-display" id="timerDisplay">00:00</div>
-        <div class="row">
-          <button class="btn primary" id="timerToggle">開始</button>
-          <button class="btn secondary" id="timerReset">重置</button>
-        </div>
-      </div>
-      <div class="row topbar-meta">
-        <span class="chip badge-info" id="trainerPlanTitle">尚未載入計畫</span>
-        <span class="chip" id="trainerProgress">0 / 0</span>
-      </div>
-    </div>
-    <main class="stack" id="trainerApp">
-      <section class="card stack" id="trainerCurrent"></section>
-
-      <section class="card stack" id="trainerComplete" style="display: none;">
-        <h3>計畫完成</h3>
-        <p class="muted" id="trainerSummary"></p>
-        <div class="row">
-          <button class="btn info" id="trainerDownloadCsv">下載 CSV</button>
-          <button class="btn secondary" id="trainerShareCsv">分享 CSV</button>
-        </div>
-      </section>
-
-      <section class="card stack drop-zone" id="trainerDrop">
-        <h3>拖放 Markdown 訓練計畫</h3>
-        <p class="muted">可以從 Recorder 匯出的 Markdown 拖進來，或直接貼上內容。</p>
-        <textarea id="trainerMarkdownInput" class="mono" rows="6" placeholder="貼上 Markdown 或拖放檔案"></textarea>
-        <div class="row">
-          <button class="btn info" id="trainerLoadMarkdown">載入計畫</button>
-          <button class="btn secondary" id="trainerClear">清空計畫</button>
-        </div>
-      </section>
-    </main>
-  </section>
+  <div class="dock" id="dock" hidden></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <div class="layer" id="layer"></div>
+  <div class="focus" id="focus" role="dialog" aria-modal="true" aria-label="訓練模式"></div>
 
 <script>
-const $ = (sel, root=document) => root.querySelector(sel);
-const $$ = (sel, root=document) => [...root.querySelectorAll(sel)];
+'use strict';
 
-function todayISO(){
+/* ---------- Utilities ---------- */
+const $ = (sel, root = document) => root.querySelector(sel);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const uid = () => Math.random().toString(36).slice(2, 10);
+const pad = n => String(n).padStart(2, '0');
+const norm = s => String(s ?? '').trim().toLowerCase();
+const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : 0; };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function todayISO() {
   const d = new Date();
-  const tz = new Date(d.getTime() - d.getTimezoneOffset()*60000);
-  return tz.toISOString().slice(0,10);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
 }
-function uid(){ return Math.random().toString(36).slice(2,10); }
+function parseDay(iso) { const d = new Date(`${iso}T00:00:00`); return isNaN(d) ? null : d; }
+function fmtDate(iso) {
+  const d = parseDay(iso); if (!d) return iso || '';
+  return `${d.getMonth() + 1}月${d.getDate()}日 週${'日一二三四五六'[d.getDay()]}`;
+}
+function relDay(iso) {
+  const d = parseDay(iso), t = parseDay(todayISO());
+  if (!d) return iso || '';
+  const diff = Math.round((t - d) / 86400000);
+  if (diff === 0) return '今天';
+  if (diff === 1) return '昨天';
+  if (diff > 1 && diff < 7) return `${diff} 天前`;
+  return `${d.getMonth() + 1}/${d.getDate()}`;
+}
+function fmtClock(sec) {
+  sec = Math.max(0, Math.floor(sec));
+  const h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60;
+  return h ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+function fmtRest(sec) { sec = Math.max(0, Math.round(sec)); return `${Math.floor(sec / 60)}:${pad(sec % 60)}`; }
+function fmtDur(sec) {
+  const m = Math.round(sec / 60);
+  if (m < 60) return `${m} 分`;
+  return `${Math.floor(m / 60)} 小時 ${m % 60} 分`;
+}
+function fmtVol(v) { return Math.round(v).toLocaleString('en-US'); }
+function fmtW(n) { return String(Math.round(n * 100) / 100); }
+function localStamp(ms) {
+  const d = new Date(ms);
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
 
-// Navigation
-const screenMap = new Map($$('[data-screen]').map(s => [s.dataset.screen, s]));
-function showScreen(name){
-  const target = screenMap.get(name) || screenMap.get('recorder');
-  screenMap.forEach((el) => el.classList.toggle('active', el === target));
-  $$('.tab').forEach(btn => btn.classList.toggle('active', btn.dataset.go === name));
-  const titleMap = { recorder: 'FuGym Plan', trainer: 'FuGym Train' };
-  document.title = titleMap[name] || 'FuGym';
-  if(name && location.hash !== `#${name}`) location.hash = name;
-}
-$$('[data-go]').forEach(btn => btn.addEventListener('click', () => showScreen(btn.dataset.go)));
-window.addEventListener('load', () => {
-  const hash = location.hash.replace('#','');
-  if(hash && screenMap.has(hash)) showScreen(hash);
-  else showScreen('recorder');
-});
+/* ---------- Icons ---------- */
+const ICONS = {
+  more: '<circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  minus: '<path d="M5 12h14"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  down: '<path d="M6 9l6 6 6-6"/>',
+  left: '<path d="M15 6l-6 6 6 6"/>',
+  right: '<path d="M9 6l6 6-6 6"/>',
+  cal: '<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  timer: '<circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 1.5M9.5 2.5h5"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>',
+  trash: '<path d="M4 7h16M10 11v6M14 11v6M6 7l1 12.5A1.5 1.5 0 0 0 8.5 21h7a1.5 1.5 0 0 0 1.5-1.5L18 7M9 7V4h6v3"/>',
+  copy: '<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5.5A1.5 1.5 0 0 0 14.5 4h-9A1.5 1.5 0 0 0 4 5.5v9A1.5 1.5 0 0 0 5.5 16H8"/>',
+  share: '<path d="M12 3v12M7.5 7.5L12 3l4.5 4.5M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13"/>',
+  download: '<path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/>',
+  upload: '<path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M5 19.5h14"/>',
+  sliders: '<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>',
+  history: '<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4.5V8h3.5M12 8v4.5l3 1.5"/>',
+  flag: '<path d="M5 21V4M5 4h12l-2.5 4.5L17 13H5"/>',
+  play: '<path d="M8 5.5v13l10.5-6.5z" fill="currentColor"/>',
+  up: '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  arrowDown: '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4"/>',
+  dumbbell: '<path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/>',
+  repeat: '<path d="M4 11V9a3 3 0 0 1 3-3h12M16 3l3 3-3 3M20 13v2a3 3 0 0 1-3 3H5M8 21l-3-3 3-3"/>',
+  list: '<path d="M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/>',
+};
+const ic = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
 
-// Recorder (FuGym Recorder)
-const STORAGE_RECORDER = "gymlogger.fulab.v2";
-const recorderState = { date: todayISO(), exercises: [] };
-const defaultExercises = [];
+/* ---------- Exercise library ---------- */
+const LIBRARY = {
+  '胸': ['槓鈴臥推', '啞鈴臥推', '上斜槓鈴臥推', '上斜啞鈴臥推', '史密斯臥推', '機械式胸推', '蝴蝶機夾胸', '繩索夾胸', '雙槓撐體', '伏地挺身'],
+  '背': ['引體向上', '滑輪下拉', '槓鈴划船', '啞鈴單臂划船', '坐姿划船', 'T 槓划船', '直臂下壓', '傳統硬舉'],
+  '腿': ['槓鈴深蹲', '前蹲舉', '腿推舉', '哈克深蹲', '羅馬尼亞硬舉', '保加利亞分腿蹲', '弓箭步', '腿伸屈', '腿後勾', '臀推', '站姿提踵'],
+  '肩': ['槓鈴肩推', '啞鈴肩推', '機械式肩推', '側平舉', '繩索側平舉', '前平舉', '反向飛鳥', '臉拉', '聳肩'],
+  '手臂': ['槓鈴彎舉', '啞鈴彎舉', '錘式彎舉', '牧師椅彎舉', '繩索三頭下壓', '過頭三頭伸展', '仰臥三頭伸展', '窄握臥推'],
+  '核心': ['棒式', '側棒式', '懸垂舉腿', '捲腹', '繩索捲腹', '健腹輪', '俄羅斯轉體'],
+};
+const CATS = Object.keys(LIBRARY);
+const BUILTIN = new Map();
+for (const [cat, names] of Object.entries(LIBRARY)) names.forEach(n => BUILTIN.set(norm(n), cat));
+const REST_OPTIONS = [0, 30, 45, 60, 90, 120, 150, 180, 240, 300];
+const STEP_OPTIONS = [1, 2, 2.5, 5];
 
-function createSet(w="", r="", s="1"){
-  const sets = Math.max(1, parseInt(s ?? "1", 10) || 1);
-  return { id: uid(), w: String(w ?? ""), r: String(r ?? ""), s: String(sets) };
+/* ---------- State & storage ---------- */
+const KEY = 'fugym.app.v3';
+const OLD_RECORDER_KEY = 'gymlogger.fulab.v2';
+const OLD_TRAINER_KEY = 'fugym.trainer.v1';
+
+function freshWorkout() { return { id: uid(), date: todayISO(), startedAt: null, finishedAt: null, lastExId: null, exercises: [] }; }
+function freshState() {
+  return {
+    v: 3,
+    workout: freshWorkout(),
+    sessions: [],
+    custom: [],
+    restPrefs: {},
+    settings: { rest: 90, step: 2.5, sound: true, vibrate: true, wake: true },
+    timer: null,
+  };
 }
-function loadRecorder(){
-  const raw = localStorage.getItem(STORAGE_RECORDER);
-  if(!raw) return;
-  try{ Object.assign(recorderState, JSON.parse(raw)); } catch(e){}
-}
-function saveRecorder(){
-  recorderState.date = $("#recorderDate").value;
-  localStorage.setItem(STORAGE_RECORDER, JSON.stringify(recorderState));
-}
-function setRecorderDate(){ $("#recorderDate").value = recorderState.date || todayISO(); }
-function ensureRecorderBaseline(){
-  let mutated = false;
-  for(const ex of recorderState.exercises){
-    if(ex.name === "未命名項目"){ ex.name = ""; mutated = true; }
-    if(!Array.isArray(ex.sets)){ ex.sets = []; mutated = true; }
-    if(ex.sets.length === 0){ ex.sets.push(createSet()); mutated = true; }
-    for(const set of ex.sets){
-      if(set.w === undefined){ set.w = ""; mutated = true; }
-      if(set.r === undefined){ set.r = ""; mutated = true; }
-      const sets = Math.max(1, parseInt(set.s ?? "1", 10) || 1);
-      if(String(sets) !== set.s){ set.s = String(sets); mutated = true; }
+function mkSet(w = '', r = '') { return { id: uid(), w: String(w ?? ''), r: String(r ?? ''), done: false, doneAt: null, gap: null }; }
+
+function normalize(d) {
+  const s = freshState();
+  if (d && typeof d === 'object') {
+    if (d.workout && Array.isArray(d.workout.exercises)) s.workout = Object.assign(freshWorkout(), d.workout);
+    if (Array.isArray(d.sessions)) s.sessions = d.sessions.filter(x => x && Array.isArray(x.exercises));
+    if (Array.isArray(d.custom)) s.custom = d.custom.filter(x => x && x.name);
+    if (d.restPrefs && typeof d.restPrefs === 'object') s.restPrefs = d.restPrefs;
+    Object.assign(s.settings, d.settings || {});
+    s.timer = d.timer || null;
+  }
+  for (const ex of s.workout.exercises) {
+    ex.id = ex.id || uid();
+    ex.name = String(ex.name || '').trim() || '未命名項目';
+    if (ex.rest === undefined) ex.rest = null;
+    if (!Array.isArray(ex.sets)) ex.sets = [];
+    for (const st of ex.sets) {
+      st.id = st.id || uid();
+      st.w = String(st.w ?? ''); st.r = String(st.r ?? '');
+      st.done = !!st.done;
+      if (!st.done) { st.doneAt = null; st.gap = null; }
     }
   }
-  return mutated;
+  return s;
 }
-function addRecorderExercise(name=""){ const safeName = (name ?? "").trim(); recorderState.exercises.push({ id: uid(), name: safeName, sets: [createSet()] }); renderRecorder(); saveRecorder(); }
-function removeRecorderExercise(id){ recorderState.exercises = recorderState.exercises.filter(e=>e.id!==id); renderRecorder(); saveRecorder(); }
-function addRecorderSet(exId, w="", r="", s=""){ const ex = recorderState.exercises.find(e=>e.id===exId); if(!ex) return; ex.sets.push(createSet(w,r,s)); renderRecorder(); saveRecorder(); }
-function removeRecorderSet(exId, setId){
-  const ex = recorderState.exercises.find(e=>e.id===exId);
-  if(!ex) return;
-  ex.sets = ex.sets.filter(s=>s.id!==setId);
-  if(ex.sets.length === 0){ ex.sets.push(createSet()); }
-  renderRecorder(); saveRecorder();
+
+// Bring over data from the previous Plan / Train versions.
+function migrateOld() {
+  const s = freshState();
+  try {
+    const old = JSON.parse(localStorage.getItem(OLD_RECORDER_KEY) || 'null');
+    if (old && Array.isArray(old.exercises)) {
+      for (const ex of old.exercises) {
+        const name = String(ex.name || '').trim() || '未命名項目';
+        const sets = [];
+        for (const row of (ex.sets || [])) {
+          const n = Math.max(1, Math.min(20, parseInt(row.s, 10) || 1));
+          for (let i = 0; i < n; i++) sets.push(mkSet(row.w, row.r));
+        }
+        if (!sets.length) sets.push(mkSet());
+        s.workout.exercises.push({ id: uid(), name, rest: null, sets });
+        if (!BUILTIN.has(norm(name))) s.custom.push({ name, cat: '自訂' });
+      }
+    }
+  } catch (e) {}
+  try {
+    const t = JSON.parse(localStorage.getItem(OLD_TRAINER_KEY) || 'null');
+    if (t && Array.isArray(t.log) && t.log.length) {
+      const exercises = [];
+      for (const row of t.log) {
+        const name = String(row.exercise || '').trim() || '未命名項目';
+        let ex = exercises[exercises.length - 1];
+        if (!ex || ex.name !== name) { ex = { name, rest: null, sets: [] }; exercises.push(ex); }
+        const at = Date.parse(row.date) || null;
+        ex.sets.push({ w: String(row.weight || ''), r: String(row.actualReps || ''), doneAt: at, gap: row.restSeconds === '' ? null : row.restSeconds });
+      }
+      const first = Date.parse(t.log[0].date), last = Date.parse(t.log[t.log.length - 1].date);
+      const day = isNaN(first) ? todayISO() : localStamp(first).slice(0, 10);
+      s.sessions.push({ id: uid(), date: day, startedAt: first || null, finishedAt: last || null, exercises });
+    }
+  } catch (e) {}
+  return s;
 }
-function updateRecorderName(exId, name){ const ex = recorderState.exercises.find(e=>e.id===exId); if(!ex) return; ex.name = name.trim(); saveRecorder(); }
-function updateRecorderSetField(exId, setId, field, value){
-  const ex = recorderState.exercises.find(e=>e.id===exId);
-  if(!ex) return;
-  const s = ex.sets.find(s=>s.id===setId);
-  if(!s) return;
-  let cleaned = String(value ?? "");
-  if(field === 'w') cleaned = cleaned.replace(/[^\d.]/g, "");
-  else cleaned = cleaned.replace(/\D/g, "");
-  s[field] = cleaned;
-  saveRecorder();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return normalize(JSON.parse(raw));
+  } catch (e) {}
+  return migrateOld();
 }
-function changeRecorderSetCount(exId, setId, delta){
-  const ex = recorderState.exercises.find(e=>e.id===exId);
-  if(!ex) return;
-  const set = ex.sets.find(s=>s.id===setId);
-  if(!set) return;
-  const current = parseInt(set.s || "1", 10) || 1;
-  const next = Math.max(1, current + delta);
-  set.s = String(next);
-  renderRecorder();
-  saveRecorder();
+
+let S = load();
+let perfCache = new Map();
+
+function save() {
+  archive();
+  perfCache = new Map();
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
 }
-function mdSafe(text){ return String(text ?? "").replace(/\|/g, "\\|").replace(/\n/g, " "); }
-function exportRecorderMarkdown(){
-  const date = $("#recorderDate").value || recorderState.date || todayISO();
+
+// Keep a history entry of the current workout (only completed sets) so that
+// "上次" values and the history list are always up to date.
+function archive() {
+  const w = S.workout;
+  const exercises = w.exercises
+    .map(ex => ({ name: ex.name, rest: ex.rest, sets: ex.sets.filter(s => s.done).map(s => ({ w: s.w, r: s.r, doneAt: s.doneAt, gap: s.gap })) }))
+    .filter(ex => ex.sets.length);
+  const i = S.sessions.findIndex(x => x.id === w.id);
+  if (!exercises.length) { if (i >= 0) S.sessions.splice(i, 1); return; }
+  const rec = { id: w.id, date: w.date, startedAt: w.startedAt, finishedAt: w.finishedAt, exercises };
+  if (i >= 0) S.sessions[i] = rec; else S.sessions.push(rec);
+  S.sessions.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.startedAt || 0) - (b.startedAt || 0));
+  if (S.sessions.length > 400) S.sessions.splice(0, S.sessions.length - 400);
+}
+
+/* ---------- Derived data ---------- */
+const findEx = id => S.workout.exercises.find(e => e.id === id);
+const restOf = ex => (ex && ex.rest != null) ? ex.rest : S.settings.rest;
+
+function lastPerf(name) {
+  const key = norm(name);
+  if (perfCache.has(key)) return perfCache.get(key);
+  let found = null;
+  for (let i = S.sessions.length - 1; i >= 0 && !found; i--) {
+    const s = S.sessions[i];
+    if (s.id === S.workout.id) continue;
+    const ex = s.exercises.find(e => norm(e.name) === key);
+    if (ex) found = { date: s.date, sets: ex.sets, rest: ex.rest };
+  }
+  perfCache.set(key, found);
+  return found;
+}
+function lastSession() {
+  for (let i = S.sessions.length - 1; i >= 0; i--) if (S.sessions[i].id !== S.workout.id) return S.sessions[i];
+  return null;
+}
+function catOf(name) {
+  return BUILTIN.get(norm(name)) || (S.custom.find(c => norm(c.name) === norm(name)) || {}).cat || '自訂';
+}
+function customNames() {
+  const out = new Map();
+  for (const c of S.custom) if (!BUILTIN.has(norm(c.name))) out.set(norm(c.name), c.name);
+  for (const s of S.sessions) for (const e of s.exercises) if (!BUILTIN.has(norm(e.name)) && !out.has(norm(e.name))) out.set(norm(e.name), e.name);
+  return [...out.values()];
+}
+function allNames() {
+  const out = new Map();
+  for (const names of Object.values(LIBRARY)) names.forEach(n => out.set(norm(n), n));
+  for (const n of customNames()) if (!out.has(norm(n))) out.set(norm(n), n);
+  return [...out.values()];
+}
+function recentNames() {
+  const out = new Map();
+  for (let i = S.sessions.length - 1; i >= 0; i--) {
+    const s = S.sessions[i];
+    for (const e of s.exercises) if (!out.has(norm(e.name))) out.set(norm(e.name), e.name);
+  }
+  return [...out.values()].slice(0, 40);
+}
+function stats(w = S.workout) {
+  let total = 0, done = 0, vol = 0;
+  for (const ex of w.exercises) for (const s of ex.sets) {
+    total++;
+    if (s.done) { done++; vol += num(s.w) * num(s.r); }
+  }
+  return { total, done, vol, exCount: w.exercises.length };
+}
+function sessionStats(s) {
+  let sets = 0, vol = 0;
+  for (const e of s.exercises) for (const x of e.sets) { sets++; vol += num(x.w) * num(x.r); }
+  return { sets, vol };
+}
+// The next set to do: keep going on the exercise you're on, then move down the list (wrapping around).
+function nextTarget() {
+  const list = S.workout.exercises;
+  const start = Math.max(0, list.findIndex(e => e.id === S.workout.lastExId));
+  for (let k = 0; k < list.length; k++) {
+    const ex = list[(start + k) % list.length];
+    const set = ex.sets.find(s => !s.done);
+    if (set) return { ex, set };
+  }
+  return null;
+}
+function lastDoneAt() {
+  let t = 0;
+  for (const ex of S.workout.exercises) for (const s of ex.sets) if (s.done && s.doneAt > t) t = s.doneAt;
+  return t;
+}
+// Suggested values for an empty set: the set above it today, otherwise the same set last time.
+function placeholderFor(ex, set) {
+  const idx = ex.sets.indexOf(set);
+  let w = '', r = '';
+  for (let i = idx - 1; i >= 0 && !(w && r); i--) {
+    if (!w && ex.sets[i].w) w = ex.sets[i].w;
+    if (!r && ex.sets[i].r) r = ex.sets[i].r;
+  }
+  const last = lastPerf(ex.name);
+  if (last && last.sets.length) {
+    const ls = last.sets[Math.min(idx, last.sets.length - 1)];
+    if (!w) w = ls.w || '';
+    if (!r) r = ls.r || '';
+  }
+  return { w, r };
+}
+function prevSetOf(ex, idx) {
+  const last = lastPerf(ex.name);
+  return last && last.sets[idx] ? last.sets[idx] : null;
+}
+function setText(w, r) {
+  if (w && r) return `${w}×${r}`;
+  if (r) return `${r} 次`;
+  if (w) return `${w} kg`;
+  return '—';
+}
+function setLabel(ex, set) {
+  const ph = placeholderFor(ex, set);
+  const w = set.w || ph.w, r = set.r || ph.r;
+  return `${w || '–'} kg × ${r || '–'}`;
+}
+function perfSummary(sets) {
+  if (!sets || !sets.length) return '';
+  let top = sets[0];
+  for (const s of sets) if (num(s.w) > num(top.w)) top = s;
+  return `${sets.length} 組 · ${setText(top.w, top.r)}`;
+}
+
+/* ---------- Feedback: sound, vibration, wake lock ---------- */
+let actx = null;
+function unlockAudio() {
+  try {
+    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
+  } catch (e) {}
+}
+document.addEventListener('pointerdown', unlockAudio, { passive: true });
+function tone(freq, dur, when = 0, vol = 0.22) {
+  if (!S.settings.sound || !actx) return;
+  try {
+    const t = actx.currentTime + when;
+    const o = actx.createOscillator(), g = actx.createGain();
+    o.type = 'sine'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.015);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(actx.destination);
+    o.start(t); o.stop(t + dur + 0.03);
+  } catch (e) {}
+}
+function haptic(pattern = 12) {
+  if (!S.settings.vibrate || !navigator.vibrate) return;
+  try { navigator.vibrate(pattern); } catch (e) {}
+}
+let wakeLock = null;
+async function syncWakeLock() {
+  const want = S.settings.wake && S.workout.startedAt && !S.workout.finishedAt && document.visibilityState === 'visible';
+  try {
+    if (want && !wakeLock && 'wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } else if (!want && wakeLock) {
+      await wakeLock.release(); wakeLock = null;
+    }
+  } catch (e) { wakeLock = null; }
+}
+
+/* ---------- Toast & undo ---------- */
+let toastTimer = null;
+function toast(msg, opts = {}) {
+  const t = $('#toast');
+  t.innerHTML = `<span>${esc(msg)}</span>${opts.action ? `<button type="button">${esc(opts.action)}</button>` : ''}`;
+  if (opts.action) $('button', t).onclick = () => { hideToast(); opts.fn && opts.fn(); };
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(hideToast, opts.ms || 2600);
+}
+function hideToast() { $('#toast').classList.remove('show'); }
+function withUndo(msg, mutate) {
+  const snap = JSON.stringify({ workout: S.workout, timer: S.timer });
+  mutate();
+  save(); renderAll();
+  toast(msg, {
+    action: '復原', ms: 5000, fn: () => {
+      const o = JSON.parse(snap);
+      S.workout = o.workout; S.timer = o.timer;
+      save(); renderAll();
+    }
+  });
+}
+
+/* ---------- Workout actions ---------- */
+function addExercises(names) {
+  const added = [];
+  for (const name of names) {
+    const last = lastPerf(name);
+    const sets = last && last.sets.length ? last.sets.map(s => mkSet(s.w, s.r)) : [mkSet(), mkSet(), mkSet()];
+    const pref = S.restPrefs[name];
+    const ex = { id: uid(), name, rest: pref != null ? pref : (last && last.rest != null ? last.rest : null), sets };
+    S.workout.exercises.push(ex);
+    added.push(ex);
+  }
+  if (S.workout.finishedAt && added.length) S.workout.finishedAt = null;
+  save(); renderAll();
+  return added;
+}
+function useSession(id) {
+  const s = S.sessions.find(x => x.id === id);
+  if (!s) return;
+  const have = new Set(S.workout.exercises.map(e => norm(e.name)));
+  let n = 0;
+  for (const e of s.exercises) {
+    if (have.has(norm(e.name))) continue;
+    const pref = S.restPrefs[e.name];
+    S.workout.exercises.push({ id: uid(), name: e.name, rest: pref != null ? pref : (e.rest ?? null), sets: e.sets.map(x => mkSet(x.w, x.r)) });
+    n++;
+  }
+  if (n && S.workout.finishedAt) S.workout.finishedAt = null;
+  save(); renderAll();
+  toast(n ? `已帶入 ${n} 個項目，重量與次數沿用 ${relDay(s.date)}` : '這些項目都已經在今日清單中');
+}
+function addSet(exId) {
+  const ex = findEx(exId); if (!ex) return;
+  const last = ex.sets[ex.sets.length - 1];
+  let w = '', r = '';
+  if (last) { const ph = placeholderFor(ex, last); w = last.w || ph.w; r = last.r || ph.r; }
+  else { const lp = lastPerf(ex.name); if (lp && lp.sets[0]) { w = lp.sets[0].w; r = lp.sets[0].r; } }
+  ex.sets.push(mkSet(w, r));
+  if (S.workout.finishedAt) S.workout.finishedAt = null;
+  save(); renderAll();
+}
+function setField(exId, setId, field, value) {
+  const ex = findEx(exId); if (!ex) return;
+  const set = ex.sets.find(s => s.id === setId); if (!set) return;
+  set[field] = value;
+  save();
+}
+function sanitize(v, field) {
+  v = String(v ?? '');
+  if (field === 'w') return v.replace(',', '.').replace(/[^\d.]/g, '').replace(/(\..*)\./g, '$1').slice(0, 6);
+  return v.replace(/\D/g, '').slice(0, 4);
+}
+function startRest(ex, set) {
+  const sec = restOf(ex);
+  if (sec <= 0) { S.timer = null; return; }
+  const now = Date.now();
+  S.timer = { start: now, end: now + sec * 1000, total: sec * 1000, exId: ex.id, setId: set.id, alerted: false };
+  lastPip = null;
+}
+function toggleSet(exId, setId) {
+  const ex = findEx(exId); if (!ex) return;
+  const set = ex.sets.find(s => s.id === setId); if (!set) return;
+  if (set.done) {
+    set.done = false; set.doneAt = null; set.gap = null;
+    if (S.timer && S.timer.setId === setId) S.timer = null;
+    save(); renderAll();
+    return;
+  }
+  const ph = placeholderFor(ex, set);
+  if (!set.w && ph.w) set.w = ph.w;
+  if (!set.r && ph.r) set.r = ph.r;
+  const now = Date.now();
+  const prev = lastDoneAt();
+  set.done = true; set.doneAt = now; set.gap = prev ? Math.round((now - prev) / 1000) : null;
+  S.workout.lastExId = ex.id;
+  if (!S.workout.startedAt) S.workout.startedAt = now;
+  if (S.workout.finishedAt) S.workout.finishedAt = null;
+  const remaining = nextTarget();
+  if (remaining) startRest(ex, set); else S.timer = null;
+  haptic(18);
+  save(); renderAll(); syncWakeLock();
+  if (!remaining) toast('所有組數都完成了！', { action: '結束訓練', fn: finishWorkout, ms: 6000 });
+}
+function adjustRest(delta) {
+  const t = S.timer; if (!t) return;
+  const now = Date.now();
+  if (t.alerted || t.end <= now) {
+    if (delta <= 0) { S.timer = null; }
+    else { t.start = now; t.end = now + delta * 1000; t.total = delta * 1000; t.alerted = false; }
+  } else {
+    t.end += delta * 1000;
+    t.total = Math.max(1000, t.total + delta * 1000);
+    if (t.end <= now) S.timer = null;
+  }
+  save(); renderDock(); renderFocus();
+}
+function skipRest() { S.timer = null; save(); renderDock(); renderFocus(); }
+function startWorkout() {
+  if (!S.workout.startedAt) S.workout.startedAt = Date.now();
+  S.workout.finishedAt = null;
+  save(); renderAll(); syncWakeLock();
+  openFocus();
+}
+function confirmFinish() {
+  const st = stats();
+  if (!st.done) { closeSheet(); toast('還沒有完成任何一組'); return; }
+  const left = st.total - st.done;
+  if (left > 0) {
+    openSheet({
+      title: '結束訓練？',
+      body: `<p style="margin:0;color:var(--text-2)">還有 ${left} 組沒有打勾，未完成的組數不會被記錄。</p>`,
+      foot: `<button class="btn soft" data-act="sheet-close">繼續訓練</button><button class="btn primary" data-act="finish-now">結束並儲存</button>`,
+    });
+  } else finishWorkout();
+}
+function finishWorkout() {
+  if (!stats().done) { toast('還沒有完成任何一組'); return; }
+  S.workout.finishedAt = Date.now();
+  S.timer = null;
+  closeFocus();
+  save(); renderAll(); syncWakeLock();
+  haptic([20, 60, 20]);
+  openSummary();
+}
+function newWorkout() {
+  withUndo('已開始新的訓練', () => {
+    S.workout = freshWorkout();
+    S.timer = null;
+    focusExId = null;
+  });
+  closeFocus();
+  syncWakeLock();
+}
+function moveEx(exId, d) {
+  const list = S.workout.exercises;
+  const i = list.findIndex(e => e.id === exId), j = i + d;
+  if (i < 0 || j < 0 || j >= list.length) return;
+  [list[i], list[j]] = [list[j], list[i]];
+  save(); renderAll();
+  openExMenu(exId);
+}
+function deleteEx(exId) {
+  const ex = findEx(exId); if (!ex) return;
+  closeSheet();
+  withUndo(`已刪除「${ex.name}」`, () => {
+    S.workout.exercises = S.workout.exercises.filter(e => e.id !== exId);
+    if (S.timer && S.timer.exId === exId) S.timer = null;
+  });
+}
+function setRest(exId, sec) {
+  const ex = findEx(exId); if (!ex) return;
+  ex.rest = sec;
+  S.restPrefs[ex.name] = sec;
+  save(); renderAll();
+  $$('[data-act="set-rest"]').forEach(c => c.classList.toggle('on', +c.dataset.sec === sec));
+}
+
+/* ---------- Export ---------- */
+function exportExercises() {
+  const anyDone = S.workout.exercises.some(e => e.sets.some(s => s.done));
+  return S.workout.exercises
+    .map(ex => ({ name: ex.name, sets: ex.sets.filter(s => anyDone ? s.done : (s.w || s.r)) }))
+    .filter(ex => ex.sets.length);
+}
+function mdSafe(t) { return String(t ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' '); }
+function toMarkdown() {
+  const date = S.workout.date;
   const rows = [];
-  for(const ex of recorderState.exercises){
-    const name = ex.name || "未命名項目";
-    for(const s of ex.sets){
-      const w = (s.w || "").trim();
-      const r = (s.r || "").trim();
-      const sets = (s.s || "").trim();
-      if(!w && !r && !sets) continue;
-      rows.push({ name, w, r, sets });
+  for (const ex of exportExercises()) {
+    let prev = null;
+    for (const s of ex.sets) {
+      if (prev && prev.w === s.w && prev.r === s.r) { prev.n++; continue; }
+      prev = { name: ex.name, w: s.w, r: s.r, n: 1 };
+      rows.push(prev);
     }
   }
-  const header = [
-    "---",
+  if (!rows.length) return '';
+  return [
+    '---',
     `title: FuGym ${date}`,
-    "category: Gym",
-    "layout: post",
+    'category: Gym',
+    'layout: post',
     `date: ${date}`,
-    "tags: []",
-    "---",
-    "",
-    "| Exercise | Weight (kg) | Reps per Set | Sets |",
-    "| --- | --- | --- | --- |"
-  ];
-  const body = rows.map(row => `| ${mdSafe(row.name)} | ${mdSafe(row.w)} | ${mdSafe(row.r)} | ${mdSafe(row.sets)} |`);
-  const out = [...header, ...body].join("\n");
-  $("#recorderNoteOut").value = out;
+    'tags: []',
+    '---',
+    '',
+    '| Exercise | Weight (kg) | Reps per Set | Sets |',
+    '| --- | --- | --- | --- |',
+    ...rows.map(r => `| ${mdSafe(r.name)} | ${mdSafe(r.w)} | ${mdSafe(r.r)} | ${r.n} |`),
+  ].join('\n');
+}
+function toCsv() {
+  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lines = [['date', 'exercise', 'set', 'weight_kg', 'reps', 'completed_at', 'seconds_since_prev_set'].join(',')];
+  for (const ex of S.workout.exercises) {
+    let n = 0;
+    for (const s of ex.sets) {
+      if (!s.done) continue;
+      n++;
+      lines.push([S.workout.date, ex.name, n, s.w, s.r, s.doneAt ? localStamp(s.doneAt) : '', s.gap ?? ''].map(q).join(','));
+    }
+  }
+  return lines.length > 1 ? lines.join('\n') : '';
+}
+async function copyText(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
+  try {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select();
+    const ok = document.execCommand('copy');
+    ta.remove();
+    return ok;
+  } catch (e) { return false; }
+}
+function download(text, filename, mime) {
+  const url = URL.createObjectURL(new Blob([text], { type: mime }));
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+async function shareFile(text, filename, mime, title) {
+  try {
+    if (window.File && navigator.canShare) {
+      const file = new File([text], filename, { type: mime });
+      if (navigator.canShare({ files: [file] })) { await navigator.share({ title, files: [file] }); return; }
+    }
+    if (navigator.share) { await navigator.share({ title, text }); return; }
+  } catch (e) {
+    if (e && e.name === 'AbortError') return;
+  }
+  if (await copyText(text)) toast('這個瀏覽器無法分享，已改為複製到剪貼簿');
+  else download(text, filename, mime);
+}
+async function doCopyMd() {
+  const md = toMarkdown();
+  if (!md) { toast('目前沒有可以匯出的內容'); return; }
+  toast(await copyText(md) ? 'Markdown 已複製到剪貼簿' : '複製失敗，請改用分享或下載');
+}
+function doShareMd() {
+  const md = toMarkdown();
+  if (!md) { toast('目前沒有可以匯出的內容'); return; }
+  shareFile(md, `${S.workout.date}-gym.md`, 'text/markdown', 'FuGym 健身筆記');
+}
+function doCsv() {
+  const csv = toCsv();
+  if (!csv) { toast('還沒有完成的組數可以匯出'); return; }
+  download(csv, `fugym-${S.workout.date}.csv`, 'text/csv');
+}
+
+/* ---------- Import ---------- */
+function parsePlan(text) {
+  const lines = String(text || '').split(/\r?\n/);
+  const split = line => line.trim().replace(/\\\|/g, '\u0001').replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.replace(/\u0001/g, '|').trim());
+  const out = [];
+  const push = (name, w, r, n, rest) => {
+    name = String(name || '').trim();
+    if (!name || name === '-') return;
+    let ex = out[out.length - 1];
+    if (!ex || ex.name !== name) { ex = { name, rest: null, sets: [] }; out.push(ex); }
+    if (Number.isFinite(rest)) ex.rest = rest;
+    for (let i = 0; i < n; i++) ex.sets.push({ w, r });
+  };
+  const hi = lines.findIndex(l => /^\s*\|/.test(l) && /(exercise|動作|項目)/i.test(l));
+  if (hi !== -1) {
+    const head = split(lines[hi]).map(h => h.toLowerCase());
+    const col = (...keys) => head.findIndex(h => keys.some(k => h.includes(k)));
+    const iName = col('exercise', '動作', '項目');
+    const iW = col('weight', '重量', 'kg');
+    const iR = col('reps', '次');
+    const iSets = head.findIndex(h => /^sets?\b/.test(h) || h.includes('組數') || h === '組');
+    const iRest = col('rest', '休息');
+    const iNote = col('note', '備註');
+    for (let i = hi + 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line.startsWith('|')) { if (out.length) break; continue; }
+      const c = split(line);
+      if (c.every(x => !x || /^:?-{2,}:?$/.test(x))) continue;
+      let w = iW >= 0 ? (c[iW] || '') : '';
+      if (!w && iNote >= 0) { const m = (c[iNote] || '').match(/([\d.]+)\s*kg/i); if (m) w = m[1]; }
+      const rm = iR >= 0 ? String(c[iR] || '').match(/\d+/) : null;
+      const n = Math.max(1, Math.min(20, parseInt(c[iSets], 10) || 1));
+      const rest = iRest >= 0 ? parseInt(c[iRest], 10) : NaN;
+      push(c[iName], sanitize(w, 'w'), rm ? rm[0] : '', n, rest);
+    }
+  } else {
+    for (const line of lines) {
+      const m = line.match(/^\s*[-*]\s*(.+)$/);
+      if (!m) continue;
+      const p = m[1].split('|').map(x => x.trim());
+      const rm = String(p[2] || '').match(/\d+/);
+      push(p[0], '', rm ? rm[0] : '', Math.max(1, Math.min(20, parseInt(p[1], 10) || 1)), parseInt(p[3], 10));
+    }
+  }
   return out;
 }
-
-function recorderToPlanItems(){
-  const items = [];
-  for(const ex of recorderState.exercises){
-    const name = ex.name || "未命名項目";
-    for(const s of ex.sets){
-      const sets = Math.max(1, parseInt(s.s || "1", 10) || 1);
-      const reps = (s.r || "").trim();
-      const rest = "";
-      const w = (s.w || "").trim();
-      const note = w ? `重量 ${w}kg` : "";
-      if(!name && !reps && !w) continue;
-      items.push({ name, sets: String(sets), reps, rest, note });
-    }
+function importText(text) {
+  const plan = parsePlan(text);
+  if (!plan.length) { toast('讀不到任何項目，請確認表格格式'); return false; }
+  for (const e of plan) {
+    S.workout.exercises.push({ id: uid(), name: e.name, rest: e.rest ?? (S.restPrefs[e.name] ?? null), sets: e.sets.map(s => mkSet(s.w, s.r)) });
+    if (!BUILTIN.has(norm(e.name)) && !S.custom.some(c => norm(c.name) === norm(e.name))) S.custom.push({ name: e.name, cat: '自訂' });
   }
-  return items;
+  if (S.workout.finishedAt) S.workout.finishedAt = null;
+  save(); renderAll();
+  toast(`已匯入 ${plan.length} 個項目`);
+  return true;
 }
 
-function exportRecorderPlanMarkdown(){
-  const date = $("#recorderDate").value || recorderState.date || todayISO();
-  const title = `FuGym Plan ${date}`;
-  const items = recorderToPlanItems();
-  const header = [
-    "---",
-    `title: ${title}`,
-    "type: fugym-plan",
-    `date: ${date}`,
-    "---",
-    "",
-    `# ${title}`,
-    "",
-    "| Step | Exercise | Sets | Reps | Rest (sec) | Note |",
-    "| --- | --- | --- | --- | --- | --- |"
-  ];
-  const rows = items.map((item, idx) => {
-    return `| ${idx+1} | ${mdSafe(item.name || "") || "-"} | ${mdSafe(item.sets || "")} | ${mdSafe(item.reps || "")} | ${mdSafe(item.rest || "")} | ${mdSafe(item.note || "")} |`;
-  });
-  const out = [...header, ...rows].join("\n");
-  return { md: out, items, title };
+/* ---------- Rendering: main page ---------- */
+function renderHeader() {
+  const w = S.workout;
+  $('#dateLabel').textContent = `${fmtDate(w.date)}${w.date === todayISO() ? ' · 今天' : ''}`;
+  $('#dateInput').value = w.date;
+  $('#pageTitle').textContent = w.finishedAt ? '訓練完成' : w.startedAt ? '訓練中' : '今日計畫';
+  $('#elapsedPill').hidden = !w.startedAt;
+  paintElapsed(Date.now());
 }
-function clearRecorder(){
-  if(confirm("清空本次所有資料？此動作不可還原。")){
-    recorderState.exercises = [];
-    $("#recorderNoteOut").value = "";
-    renderRecorder();
-    saveRecorder();
-  }
+function paintElapsed(now) {
+  const w = S.workout, el = $('#elapsedPill');
+  if (!w.startedAt) return;
+  const sec = ((w.finishedAt || now) - w.startedAt) / 1000;
+  el.innerHTML = `${ic(w.finishedAt ? 'flag' : 'clock')}${fmtClock(sec)}`;
 }
-async function shareRecorder(){
-  const txt = $("#recorderNoteOut").value || exportRecorderMarkdown();
-  const dateToken = recorderState.date || todayISO();
-  const filename = `${dateToken}-gym.md`;
-  try{
-    if(navigator.canShare && window.Blob){
-      const file = new File([txt], filename, { type: "text/markdown" });
-      await navigator.share({ title: "FuGym 健身筆記", text: "本次訓練筆記", files: [file] });
-    } else if (navigator.share) {
-      await navigator.share({ title: "FuGym 健身筆記", text: txt });
-    }
-  }catch(e){ }
+function renderStats() {
+  const st = stats();
+  const box = $('#stats');
+  box.hidden = !st.exCount;
+  if (!st.exCount) return;
+  const pct = st.total ? Math.round(st.done / st.total * 100) : 0;
+  box.innerHTML = `
+    <div class="stats-row">
+      <div class="stat"><b class="num">${st.exCount}</b><span>項目</span></div>
+      <div class="stat"><b class="num">${st.done}<span style="font-size:15px;color:var(--text-3)"> / ${st.total}</span></b><span>完成組數</span></div>
+      <div class="stat"><b class="num">${fmtVol(st.vol)}</b><span>總量 kg</span></div>
+    </div>
+    <div class="progress" aria-label="完成 ${pct}%"><i style="width:${pct}%"></i></div>`;
 }
-function renderRecorder(){
-  setRecorderDate();
-  const mutated = ensureRecorderBaseline();
-  const wrap = $("#recorderExercises"); wrap.innerHTML = "";
-  for(const ex of recorderState.exercises){
-    const card = document.createElement("section");
-    card.className = "exercise stack";
-    card.innerHTML = `
-      <div class="ex-header">
-        <div class="ex-title">
-          <span class="chip">項目</span>
-          <input type="text" value="${escapeHtml(ex.name || "")}" placeholder="未命名項目" aria-label="項目名稱" />
-        </div>
-        <div class="row">
-          <button class="btn secondary" data-add="+">換重量／次數</button>
-          <button class="btn danger" data-del="ex">刪除項目</button>
-        </div>
+function renderEmpty() {
+  const box = $('#empty');
+  const has = S.workout.exercises.length > 0;
+  box.hidden = has;
+  $('#addEx').hidden = !has;
+  if (has) return;
+  const last = lastSession();
+  const others = S.sessions.filter(s => s.id !== S.workout.id).length;
+  box.innerHTML = `
+    <div class="empty">
+      <div class="empty-icon">${ic('dumbbell')}</div>
+      <h2>今天要練什麼？</h2>
+      <p>從動作庫挑選今天的項目，會自動帶入上次的重量與次數。</p>
+      <button class="btn primary lg" data-act="open-picker">${ic('plus')}選擇項目</button>
+      ${last ? `<button class="btn" data-act="repeat-last">${ic('repeat')}重複上次訓練 · ${esc(relDay(last.date))} · ${last.exercises.length} 項</button>` : ''}
+      ${others > 1 ? `<button class="btn soft" data-act="history">${ic('history')}從歷史紀錄挑選</button>` : ''}
+      <button class="btn soft" data-act="import">${ic('upload')}匯入 Markdown 計畫</button>
+    </div>`;
+}
+function exerciseHTML(ex, i, target) {
+  const last = lastPerf(ex.name);
+  const rest = restOf(ex);
+  const complete = ex.sets.length > 0 && ex.sets.every(s => s.done);
+  const rows = ex.sets.map((s, idx) => {
+    const ph = placeholderFor(ex, s);
+    const prev = prevSetOf(ex, idx);
+    const isNext = target && target.set === s;
+    return `
+      <div class="set-row${s.done ? ' done' : ''}${isNext ? ' next' : ''}" data-set="${s.id}">
+        <button class="set-no num" data-act="set-menu" aria-label="第 ${idx + 1} 組選項">${idx + 1}</button>
+        <button class="set-prev" data-act="use-prev" ${prev ? '' : 'disabled'} aria-label="套用上次數值">${prev ? esc(setText(prev.w, prev.r)) : '—'}</button>
+        <input class="set-in" data-field="w" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="${esc(s.w)}" placeholder="${esc(ph.w || 'kg')}" aria-label="第 ${idx + 1} 組重量（公斤）" />
+        <input class="set-in" data-field="r" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="next" value="${esc(s.r)}" placeholder="${esc(ph.r || '次')}" aria-label="第 ${idx + 1} 組次數" />
+        <button class="check" data-act="toggle" aria-pressed="${s.done}" aria-label="${s.done ? '取消完成' : '完成'}第 ${idx + 1} 組">${ic('check')}</button>
+      </div>`;
+  }).join('');
+  return `
+    <article class="ex-card${complete ? ' complete' : ''}" data-ex="${ex.id}" id="ex-${ex.id}">
+      <div class="ex-head">
+        <span class="ex-num num">${complete ? ic('check') : i + 1}</span>
+        <button class="ex-title" data-act="ex-menu">
+          <span class="ex-name">${esc(ex.name)}</span>
+          <span class="ex-meta">
+            <span class="tag">${esc(catOf(ex.name))}</span>
+            <span>${ic('timer')}${rest ? `休息 ${fmtRest(rest)}` : '不計時'}</span>
+            ${last ? `<span>上次 ${esc(relDay(last.date))}</span>` : ''}
+          </span>
+        </button>
+        <button class="icon-btn" data-act="ex-menu" aria-label="${esc(ex.name)} 選項">${ic('more')}</button>
       </div>
-      <div class="set-list"></div>
-    `;
-    $("input", card).addEventListener("input", (e)=> updateRecorderName(ex.id, e.target.value));
-    $('[data-add="+"]', card).addEventListener("click", ()=> addRecorderSet(ex.id));
-    $('[data-del="ex"]', card).addEventListener("click", ()=> removeRecorderExercise(ex.id));
-
-    const setList = $(".set-list", card);
-    for(const s of ex.sets){
-      const row = document.createElement("div");
-      row.className = "set-row";
-      const setsCount = Math.max(1, parseInt(s.s || "1", 10) || 1);
-      row.innerHTML = `
-        <div class="set-input"><input class="small mono" inputmode="decimal" pattern="[0-9.]*" value="${s.w ?? ""}" placeholder="kg" aria-label="重量 (公斤)" enterkeyhint="next" /></div>
-        <div class="set-input"><input class="small mono" inputmode="numeric" pattern="[0-9]*" value="${s.r ?? ""}" placeholder="reps" aria-label="次數" enterkeyhint="next" /></div>
-        <div class="sets-control">
-          <button type="button" class="btn circle" data-sets="dec" aria-label="減少組數">-</button>
-          <span class="sets-value">${setsCount}</span>
-          <button type="button" class="btn circle" data-sets="inc" aria-label="增加組數">+</button>
-        </div>
-        <div class="set-actions"><button class="btn danger" data-del="set">刪除</button></div>
-      `;
-      const [wInput, rInput] = $$('input', row);
-      wInput.addEventListener('input', (e)=> updateRecorderSetField(ex.id, s.id, 'w', e.target.value));
-      rInput.addEventListener('input', (e)=> updateRecorderSetField(ex.id, s.id, 'r', e.target.value));
-      $('[data-sets="dec"]', row).addEventListener('click', ()=> changeRecorderSetCount(ex.id, s.id, -1));
-      $('[data-sets="inc"]', row).addEventListener('click', ()=> changeRecorderSetCount(ex.id, s.id, 1));
-      $('[data-del="set"]', row).addEventListener('click', ()=> removeRecorderSet(ex.id, s.id));
-      setList.appendChild(row);
-    }
-    wrap.appendChild(card);
-  }
-  if(mutated) saveRecorder();
+      ${ex.sets.length ? `<div class="set-head"><span>組</span><span>上次</span><span>kg</span><span>次數</span><span>完成</span></div>${rows}` : '<div class="no-sets">還沒有組數</div>'}
+      <button class="add-set" data-act="add-set">${ic('plus')}新增一組</button>
+    </article>`;
 }
-function escapeHtml(s=""){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-
-loadRecorder();
-if(recorderState.exercises.length === 0){
-  for(const name of defaultExercises) addRecorderExercise(name);
+function renderList() {
+  const target = nextTarget();
+  $('#exList').innerHTML = S.workout.exercises.map((ex, i) => exerciseHTML(ex, i, target)).join('');
+  $('#addEx').innerHTML = `${ic('plus')}加入項目`;
 }
-setRecorderDate();
-renderRecorder();
-$("#recorderDate").addEventListener("change", saveRecorder);
-$("#recorderAddExercise").addEventListener("click", ()=> addRecorderExercise());
-$("#recorderClear").addEventListener("click", clearRecorder);
-$("#recorderExport").addEventListener("click", ()=> {
-  const note = exportRecorderMarkdown();
-  if(note){
-    navigator.clipboard.writeText(note).then(
-      () => alert("Markdown 已匯出並複製到剪貼簿！"),
-      () => alert("複製失敗，請手動選取文字")
-    );
-  }
-});
-$("#recorderOpenTrainer").addEventListener("click", ()=> {
-  const result = exportRecorderPlanMarkdown();
-  if(!result.items.length){
-    alert("目前沒有可送出的動作，請先新增資料。");
-    return;
-  }
-  loadTrainerFromPlan(result.items, result.title);
-  $("#trainerMarkdownInput").value = result.md;
-  showScreen('trainer');
-  renderTrainer();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-$("#recorderShare").addEventListener("click", shareRecorder);
-
-// Recorder keyboard shortcuts
-document.addEventListener('keydown', (e)=>{
-  if(!$("#screen-recorder").classList.contains('active')) return;
-  if(e.key === 'Enter' && e.target.matches('input[aria-label="次數"]')){
-    const card = e.target.closest('.exercise');
-    const idx = $$('.exercise').indexOf(card);
-    const ex = recorderState.exercises[idx];
-    if(ex) addRecorderSet(ex.id);
-    return;
-  }
-  if(e.key === 'Tab' && !e.shiftKey && e.target.matches('input[aria-label="次數"]')){
-    const row = e.target.closest('.set-row');
-    const incBtn = row && $('[data-sets="inc"]', row);
-    if(incBtn){ e.preventDefault(); incBtn.focus(); }
-    return;
-  }
-  if(e.key === 'Tab' && e.shiftKey && e.target.matches('button[data-sets]')){
-    const row = e.target.closest('.set-row');
-    const repsInput = row && $('input[aria-label="次數"]', row);
-    if(repsInput){ e.preventDefault(); repsInput.focus(); }
-  }
-});
-
-// Trainer (FuGym Trainer)
-const STORAGE_TRAINER = "fugym.trainer.v1";
-const trainerState = {
-  title: '',
-  plan: [],
-  currentIndex: 0,
-  currentSet: 1,
-  timerRunning: false,
-  timerElapsed: 0,
-  timerStartAt: null,
-  pendingInterval: false,
-  log: [],
-  lastWeight: '',
-  lastActualReps: '',
-  lastRpe: ''
-};
-let timerInterval = null;
-
-function loadTrainer(){
-  const raw = localStorage.getItem(STORAGE_TRAINER);
-  if(!raw) return;
-  try{ Object.assign(trainerState, JSON.parse(raw)); } catch(e){}
-}
-function saveTrainer(){
-  localStorage.setItem(STORAGE_TRAINER, JSON.stringify(trainerState));
-}
-function updateTimerDisplay(){
-  const mins = String(Math.floor(trainerState.timerElapsed / 60)).padStart(2,'0');
-  const secs = String(Math.floor(trainerState.timerElapsed % 60)).padStart(2,'0');
-  $('#timerDisplay').textContent = `${mins}:${secs}`;
-}
-function updateTimerButton(){
-  $('#timerToggle').textContent = trainerState.timerRunning ? '下一組開始' : '開始';
-}
-function finalizePendingInterval(nowMs){
-  if(!trainerState.pendingInterval) return;
-  if(trainerState.timerStartAt){
-    const elapsed = Math.max(0, Math.round((nowMs - trainerState.timerStartAt) / 1000));
-    const lastLog = trainerState.log[trainerState.log.length - 1];
-    if(lastLog){ lastLog.restSeconds = elapsed; }
-  }
-  trainerState.pendingInterval = false;
-}
-function startSetTimer(){
-  const now = Date.now();
-  finalizePendingInterval(now);
-  trainerState.timerRunning = true;
-  trainerState.timerStartAt = now;
-  trainerState.timerElapsed = 0;
-  if(timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if(!trainerState.timerStartAt) return;
-    trainerState.timerElapsed = (Date.now() - trainerState.timerStartAt) / 1000;
-    updateTimerDisplay();
-  }, 250);
-  updateTimerDisplay();
-  updateTimerButton();
-  saveTrainer();
-}
-function resetTimer(){
-  trainerState.timerRunning = false;
-  trainerState.timerElapsed = 0;
-  trainerState.timerStartAt = null;
-  trainerState.pendingInterval = false;
-  clearInterval(timerInterval);
-  timerInterval = null;
-  updateTimerDisplay();
-  updateTimerButton();
-  saveTrainer();
-}
-
-function loadTrainerFromPlan(items, title){
-  trainerState.title = title || 'FuGym Plan';
-  trainerState.plan = items.map(item => ({
-    name: item.name || '',
-    sets: String(item.sets || '1'),
-    reps: String(item.reps || ''),
-    rest: String(item.rest || ''),
-    note: item.note || ''
-  }));
-  trainerState.currentIndex = 0;
-  trainerState.currentSet = 1;
-  trainerState.log = [];
-  trainerState.lastWeight = '';
-  trainerState.lastActualReps = '';
-  trainerState.lastRpe = '';
-  resetTimer();
-  renderTrainer();
-  saveTrainer();
-}
-
-function parsePlanMarkdown(text){
-  const lines = text.split(/\r?\n/);
-  let title = '';
-  for(const line of lines){
-    const match = line.match(/^title\s*:\s*(.+)$/i);
-    if(match){ title = match[1].trim(); break; }
-  }
-  let headerIndex = lines.findIndex(line => /\|\s*Exercise\s*\|/i.test(line) || /\|\s*動作\s*\|/i.test(line));
-  const items = [];
-  if(headerIndex !== -1){
-    const headerCols = lines[headerIndex].split('|').map(c => c.trim()).filter(c => c.length > 0);
-    const headerLower = headerCols.map(c => c.toLowerCase());
-    const findCol = (keywords) => headerLower.findIndex(h => keywords.some(k => h.includes(k)));
-    const idxExercise = findCol(['exercise', '動作']);
-    const idxSets = findCol(['sets', '組']);
-    const idxReps = findCol(['reps', '次']);
-    const idxRest = findCol(['rest', '休息']);
-    const idxNote = findCol(['note', '備註']);
-    const idxWeight = findCol(['weight', '重量']);
-
-    for(let i = headerIndex + 2; i < lines.length; i++){
-      const line = lines[i].trim();
-      if(!line.startsWith('|')) break;
-      const cols = line.split('|').map(c => c.trim()).filter(c => c.length > 0);
-      if(cols.length < 2) continue;
-      const exercise = (idxExercise !== -1 ? cols[idxExercise] : (cols[1] ?? cols[0] ?? '')).trim();
-      const sets = (idxSets !== -1 ? cols[idxSets] : '').trim();
-      const reps = (idxReps !== -1 ? cols[idxReps] : '').trim();
-      const rest = (idxRest !== -1 ? cols[idxRest] : '').trim();
-      let note = (idxNote !== -1 ? cols[idxNote] : '').trim();
-      const weight = (idxWeight !== -1 ? cols[idxWeight] : '').trim();
-      if(weight){
-        note = note ? `${note}; 重量 ${weight}kg` : `重量 ${weight}kg`;
-      }
-      if(!exercise) continue;
-      items.push({ name: exercise, sets, reps, rest, note });
-    }
-  } else {
-    for(const line of lines){
-      const m = line.match(/^[-*]\s*(.+)$/);
-      if(!m) continue;
-      const parts = m[1].split('|').map(p => p.trim());
-      if(parts.length >= 4){
-        items.push({ name: parts[0], sets: parts[1], reps: parts[2], rest: parts[3], note: parts[4] || '' });
-      }
-    }
-  }
-  return { title, items };
-}
-
-function trainerLogToCsv(){
-  const header = ['date','exercise','set','planned_sets','planned_reps','actual_reps','rest_seconds','rpe','weight','note'];
-  const rows = trainerState.log.map(row => [
-    row.date,
-    row.exercise,
-    row.set,
-    row.plannedSets,
-    row.plannedReps,
-    row.actualReps,
-    row.restSeconds,
-    row.rpe,
-    row.weight,
-    row.note
-  ].map(v => `"${String(v ?? '').replace(/"/g,'""')}"`).join(','));
-  return [header.join(','), ...rows].join('\n');
-}
-
-function renderTrainer(){
-  const totalItems = trainerState.plan.length;
-  const progress = totalItems > 0 ? `${trainerState.currentIndex + 1} / ${totalItems}` : '0 / 0';
-  $('#trainerPlanTitle').textContent = trainerState.title || 'FuGym Plan';
-  $('#trainerProgress').textContent = progress;
-
-  const currentWrap = $('#trainerCurrent');
-  const completeWrap = $('#trainerComplete');
-  if(totalItems === 0){
-    currentWrap.innerHTML = '<p class="muted">尚未載入計畫，請先從 Recorder 或 Markdown 載入。</p>';
-    completeWrap.style.display = 'none';
-    return;
-  }
-
-  if(trainerState.currentIndex >= totalItems){
-    if(trainerState.timerRunning || trainerState.timerElapsed){
-      resetTimer();
-    }
-    currentWrap.innerHTML = '<p class="muted">所有動作已完成！請在下方輸出紀錄。</p>';
-    completeWrap.style.display = 'block';
-    $('#trainerSummary').textContent = `共完成 ${trainerState.log.length} 組，動作 ${totalItems} 項。`;
-    saveTrainer();
-    return;
-  }
-
-  completeWrap.style.display = 'none';
-  const item = trainerState.plan[trainerState.currentIndex];
-  const plannedSets = Math.max(1, parseInt(item.sets || '1', 10) || 1);
-  const plannedReps = item.reps || '';
-  const plannedRest = item.rest || '';
-  const note = item.note || '';
-
-  currentWrap.innerHTML = `
-    <h3>${escapeHtml(item.name || '未命名動作')}</h3>
-    <div class="row">
-      <span class="chip">目標 ${plannedSets} 組 × ${escapeHtml(plannedReps || '-')} 次</span>
-      <span class="chip badge-info">建議休息 ${escapeHtml(plannedRest || '0')} 秒</span>
-      <span class="chip">第 ${trainerState.currentSet} / ${plannedSets} 組</span>
-    </div>
-    <label class="stack">
-      <span class="muted">實際重量 (kg)</span>
-      <input id="trainerWeight" type="text" inputmode="decimal" value="${escapeHtml(trainerState.lastWeight)}" placeholder="可留空" />
-    </label>
-    <label class="stack">
-      <span class="muted">實際次數</span>
-      <input id="trainerActualReps" type="text" inputmode="numeric" value="${escapeHtml(trainerState.lastActualReps || plannedReps)}" placeholder="可留空" />
-    </label>
-    <label class="stack">
-      <span class="muted">吃力程度（選填）</span>
-      <select id="trainerRpe">
-        <option value="">-</option>
-        ${Array.from({length:10}, (_,i)=> `<option value="${i+1}">${i+1}</option>`).join('')}
-      </select>
-    </label>
-    <div class="row">
-      <button class="btn primary" id="trainerCompleteSet">完成一組</button>
-      <button class="btn secondary" id="trainerSkip">跳過此動作</button>
-    </div>
-    <p class="muted">備註：${escapeHtml(note || '無')}</p>
-  `;
-
-  const rpeSelect = $('#trainerRpe');
-  rpeSelect.value = trainerState.lastRpe || '';
-  $('#trainerWeight').addEventListener('input', (e) => { trainerState.lastWeight = e.target.value; saveTrainer(); });
-  $('#trainerActualReps').addEventListener('input', (e) => { trainerState.lastActualReps = e.target.value; saveTrainer(); });
-  rpeSelect.addEventListener('change', (e) => { trainerState.lastRpe = e.target.value; saveTrainer(); });
-
-  $('#trainerCompleteSet').addEventListener('click', () => {
-    const actualReps = $('#trainerActualReps').value.trim();
-    const weight = $('#trainerWeight').value.trim();
-    const rpe = $('#trainerRpe').value;
-    const isLastSetOfPlan = trainerState.currentIndex === trainerState.plan.length - 1
-      && trainerState.currentSet === plannedSets;
-
-    trainerState.log.push({
-      date: new Date().toISOString(),
-      exercise: item.name,
-      set: trainerState.currentSet,
-      plannedSets,
-      plannedReps,
-      actualReps,
-      restSeconds: '',
-      rpe,
-      weight,
-      note
-    });
-    trainerState.pendingInterval = !isLastSetOfPlan && !!trainerState.timerStartAt;
-
-    if(trainerState.currentSet < plannedSets){
-      trainerState.currentSet += 1;
+function renderDock() {
+  const d = $('#dock'), w = S.workout;
+  let html = '';
+  if (w.exercises.length) {
+    const n = nextTarget();
+    if (S.timer) {
+      const nextTxt = n ? `下一組 ${setLabel(n.ex, n.set)} · ${n.ex.name}` : '';
+      html = `
+        <div class="rest-bar" id="restBar">
+          <div class="rest-fill" id="restFill"></div>
+          <button class="rest-main" data-act="open-focus" aria-label="開啟訓練模式">
+            <span class="rest-label" id="restLabel">組間休息</span>
+            <span class="rest-time num" id="restTime">0:00</span>
+            <span class="rest-next">${esc(nextTxt)}</span>
+          </button>
+          <button class="pill" data-act="rest-minus" aria-label="減少 15 秒">−15</button>
+          <button class="pill" data-act="rest-plus" aria-label="增加 15 秒">+15</button>
+          <button class="pill accent" data-act="rest-skip">跳過</button>
+        </div>`;
+    } else if (w.finishedAt) {
+      html = `<div class="dock-row"><button class="btn grow" data-act="summary">${ic('list')}查看總結</button><button class="btn primary grow" data-act="new-workout">${ic('refresh')}開始新的訓練</button></div>`;
+    } else if (!n) {
+      html = `<button class="btn primary block lg" data-act="finish">${ic('flag')}結束訓練並儲存</button>`;
+    } else if (!w.startedAt) {
+      html = `<button class="btn primary block lg" data-act="start">${ic('play')}開始訓練</button>`;
     } else {
-      trainerState.currentIndex += 1;
-      trainerState.currentSet = 1;
+      html = `
+        <button class="next-btn" data-act="open-focus">
+          <span class="next-ic">${ic('timer')}</span>
+          <span class="next-main"><small>下一組 · 第 ${n.ex.sets.indexOf(n.set) + 1} / ${n.ex.sets.length} 組</small><b>${esc(n.ex.name)}</b></span>
+          <span class="next-val num">${esc(setLabel(n.ex, n.set))}</span>
+          ${ic('right')}
+        </button>`;
     }
-    if(isLastSetOfPlan) resetTimer();
-    renderTrainer();
-    saveTrainer();
-  });
-
-  $('#trainerSkip').addEventListener('click', () => {
-    if(confirm('確定要跳過此動作嗎？')){
-      trainerState.currentIndex += 1;
-      trainerState.currentSet = 1;
-      renderTrainer();
-      saveTrainer();
-    }
-  });
-}
-
-function scrollTrainerToBottom(){
-  requestAnimationFrame(() => {
-    const doc = document.documentElement;
-    const target = Math.max(doc.scrollHeight, document.body.scrollHeight);
-    window.scrollTo({ top: target, behavior: 'smooth' });
-  });
-}
-
-loadTrainer();
-renderTrainer();
-updateTimerDisplay();
-updateTimerButton();
-if(trainerState.timerRunning){
-  trainerState.timerRunning = false;
-  const resumeBase = trainerState.timerStartAt || (Date.now() - (trainerState.timerElapsed || 0) * 1000);
-  trainerState.timerStartAt = resumeBase;
-  trainerState.timerRunning = true;
-  if(timerInterval) clearInterval(timerInterval);
-  timerInterval = setInterval(() => {
-    if(!trainerState.timerStartAt) return;
-    trainerState.timerElapsed = (Date.now() - trainerState.timerStartAt) / 1000;
-    updateTimerDisplay();
-  }, 250);
-  updateTimerButton();
-}
-
-$('#timerToggle').addEventListener('click', startSetTimer);
-$('#timerReset').addEventListener('click', resetTimer);
-
-$('#trainerLoadMarkdown').addEventListener('click', () => {
-  const text = $('#trainerMarkdownInput').value.trim();
-  if(!text){ alert('請先貼上 Markdown 內容'); return; }
-  const parsed = parsePlanMarkdown(text);
-  if(parsed.items.length === 0){ alert('無法解析訓練計畫，請確認格式。'); return; }
-  loadTrainerFromPlan(parsed.items, parsed.title || 'FuGym Plan');
-  scrollTrainerToBottom();
-});
-$('#trainerClear').addEventListener('click', () => {
-  trainerState.title = '';
-  trainerState.plan = [];
-  trainerState.currentIndex = 0;
-  trainerState.currentSet = 1;
-  trainerState.log = [];
-  trainerState.lastWeight = '';
-  trainerState.lastActualReps = '';
-  trainerState.lastRpe = '';
-  resetTimer();
-  saveTrainer();
-  renderTrainer();
-});
-
-$('#trainerDownloadCsv').addEventListener('click', () => {
-  const csv = trainerLogToCsv();
-  const blob = new Blob([csv], { type: 'text/csv' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = `fugym-trainer-${todayISO()}.csv`;
-  link.click();
-  URL.revokeObjectURL(link.href);
-});
-$('#trainerShareCsv').addEventListener('click', async () => {
-  const csv = trainerLogToCsv();
-  const filename = `fugym-trainer-${todayISO()}.csv`;
-  try{
-    if(navigator.canShare && window.Blob){
-      const file = new File([csv], filename, { type: 'text/csv' });
-      await navigator.share({ title: 'FuGym 訓練紀錄', text: 'CSV 訓練紀錄', files: [file] });
-      return;
-    }
-    if(navigator.share){
-      await navigator.share({ title: 'FuGym 訓練紀錄', text: csv });
-      return;
-    }
-    await navigator.clipboard.writeText(csv);
-    alert('CSV 已複製到剪貼簿');
-  }catch(e){
-    alert('分享失敗，可改用下載 CSV');
   }
-});
+  d.innerHTML = html ? `<div class="dock-inner">${html}</div>` : '';
+  d.hidden = !html;
+  if (S.timer) paintTimer(Date.now());
+  else document.title = 'FuGym';
+}
+function renderAll() {
+  renderHeader();
+  renderStats();
+  renderEmpty();
+  renderList();
+  renderDock();
+  renderFocus();
+}
 
-const dropZone = $('#trainerDrop');
-dropZone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  dropZone.classList.add('dragging');
-});
-dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragging'));
-dropZone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropZone.classList.remove('dragging');
-  if(e.dataTransfer.files && e.dataTransfer.files.length){
-    const file = e.dataTransfer.files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
-      const parsed = parsePlanMarkdown(reader.result);
-      if(parsed.items.length === 0){ alert('無法解析訓練計畫，請確認格式。'); return; }
-      $('#trainerMarkdownInput').value = reader.result;
-      loadTrainerFromPlan(parsed.items, parsed.title || file.name.replace(/\.md$/i, ''));
-      scrollTrainerToBottom();
-    };
-    reader.readAsText(file);
+/* ---------- Timer loop ---------- */
+let lastPip = null;
+function onRestEnd() {
+  tone(880, 0.16, 0); tone(880, 0.16, 0.22); tone(1320, 0.34, 0.44);
+  haptic([260, 120, 260]);
+  document.title = '⏰ 休息結束 · FuGym';
+}
+function paintTimer(now) {
+  const t = S.timer; if (!t) return;
+  const rem = (t.end - now) / 1000;
+  const over = rem <= 0;
+  const txt = over ? `+${fmtRest(-rem)}` : fmtRest(Math.ceil(rem));
+  const p = over ? 1 : Math.max(0, Math.min(1, rem * 1000 / t.total));
+  const bar = $('#restBar');
+  if (bar) {
+    bar.classList.toggle('over', over);
+    $('#restTime').textContent = txt;
+    $('#restLabel').textContent = over ? '休息結束 · 開始下一組' : '組間休息';
+    $('#restFill').style.transform = `scaleX(${p})`;
+  }
+  const f = $('#focus');
+  if (focusOpen && $('#fTime') && f.classList.contains('resting')) {
+    f.classList.toggle('over', over);
+    $('#fTime').textContent = txt;
+    $('#fLabel').textContent = over ? '休息結束' : '組間休息';
+    setRing(p);
+  }
+}
+function setRing(p) {
+  const bar = $('#ringBar'); if (!bar) return;
+  const C = 2 * Math.PI * 96;
+  bar.style.strokeDasharray = `${C}`;
+  bar.style.strokeDashoffset = `${C * (1 - p)}`;
+}
+function paintGap(now) {
+  const el = $('#fGap'); if (!el) return;
+  const t = lastDoneAt() || S.workout.startedAt;
+  if (t) el.textContent = fmtRest((now - t) / 1000);
+}
+function tick() {
+  const now = Date.now();
+  if (S.workout.startedAt && !S.workout.finishedAt) paintElapsed(now);
+  const t = S.timer;
+  if (t) {
+    const rem = (t.end - now) / 1000;
+    if (rem <= 0 && !t.alerted) { t.alerted = true; onRestEnd(); save(); }
+    else if (rem > 0 && rem <= 3) {
+      const s = Math.ceil(rem);
+      if (s !== lastPip) { lastPip = s; tone(660, 0.07, 0, 0.12); }
+    }
+    if (rem < -600) { S.timer = null; save(); renderDock(); renderFocus(); }
+    else paintTimer(now);
+  }
+  if (focusOpen && !S.timer) paintGap(now);
+}
+
+/* ---------- Sheets ---------- */
+function openSheet({ title = '', sub = '', body = '', foot = '', cls = '', attrs = '', raw = false, close = true }) {
+  const layer = $('#layer');
+  const already = layer.classList.contains('open');
+  layer.classList.toggle('static', already);
+  layer.innerHTML = `
+    <div class="backdrop" data-act="sheet-close"></div>
+    <div class="sheet ${cls}" role="dialog" aria-modal="true" aria-label="${esc(title)}" ${attrs}>
+      <div class="grabber"></div>
+      ${title ? `<div class="sheet-head"><div style="flex:1;min-width:0"><h3>${esc(title)}</h3>${sub ? `<p>${esc(sub)}</p>` : ''}</div>${close ? `<button class="icon-btn" data-act="sheet-close" aria-label="關閉">${ic('x')}</button>` : ''}</div>` : ''}
+      ${raw ? body : `<div class="sheet-body">${body}</div>`}
+      ${foot ? `<div class="sheet-foot">${foot}</div>` : ''}
+    </div>`;
+  layer.classList.add('open');
+  document.body.classList.add('lock');
+  hideToast();
+}
+function closeSheet() {
+  const layer = $('#layer');
+  if (!layer.classList.contains('open')) return;
+  layer.classList.remove('open', 'static');
+  layer.innerHTML = '';
+  if (!focusOpen) document.body.classList.remove('lock');
+}
+const sheetOpen = () => $('#layer').classList.contains('open');
+
+function openMenu() {
+  const w = S.workout;
+  const live = w.startedAt && !w.finishedAt;
+  const item = (act, icon, label, sub = '', cls = '') => `<button class="menu-item ${cls}" data-act="${act}">${ic(icon)}<span>${label}${sub ? `<small>${sub}</small>` : ''}</span></button>`;
+  openSheet({
+    title: 'FuGym',
+    sub: fmtDate(w.date),
+    body: `
+      <div class="menu">
+        ${live ? item('finish', 'flag', '結束訓練', '儲存今天完成的組數') : ''}
+        ${w.finishedAt ? item('summary', 'list', '查看訓練總結') : ''}
+        ${item('history', 'history', '訓練歷史', '把以前的訓練帶入今日清單')}
+        ${item('import', 'upload', '匯入 Markdown 計畫')}
+      </div>
+      <div class="section-label">匯出</div>
+      <div class="menu">
+        ${item('copy-md', 'copy', '複製 Markdown', '部落格筆記格式')}
+        ${item('share-md', 'share', '分享 Markdown')}
+        ${item('csv', 'download', '下載 CSV 紀錄', '每一組的重量、次數與完成時間')}
+      </div>
+      <div class="section-label">其他</div>
+      <div class="menu">
+        ${item('settings', 'sliders', '設定', '休息時間、重量級距、音效')}
+        ${w.exercises.length ? item('clear-today', 'trash', '開始新的訓練', '清空今日清單（歷史紀錄會保留）', 'danger') : ''}
+      </div>`,
+  });
+}
+function openSettings() {
+  const s = S.settings;
+  const tog = (key, label, sub) => `<label class="toggle-row"><span>${label}${sub ? `<small>${sub}</small>` : ''}</span><input type="checkbox" class="switch" data-setting="${key}" ${s[key] ? 'checked' : ''} /></label>`;
+  openSheet({
+    title: '設定',
+    body: `
+      <div class="section-label">預設組間休息</div>
+      <div class="chips">${REST_OPTIONS.filter(x => x).map(sec => `<button class="chip ${sec === s.rest ? 'on' : ''}" data-act="settings-rest" data-sec="${sec}">${fmtRest(sec)}</button>`).join('')}</div>
+      <p class="hint">每個項目也能在項目選單中個別設定休息時間。</p>
+      <div class="section-label">重量加減級距</div>
+      <div class="chips">${STEP_OPTIONS.map(v => `<button class="chip ${v === s.step ? 'on' : ''}" data-act="settings-step" data-v="${v}">${v} kg</button>`).join('')}</div>
+      <div class="section-label">提示</div>
+      ${tog('sound', '休息結束音效', '倒數最後 3 秒與結束時發出提示音')}
+      ${tog('vibrate', '震動', '支援的手機會在打勾與休息結束時震動')}
+      ${tog('wake', '訓練中保持螢幕常亮')}`,
+  });
+}
+function openExMenu(exId) {
+  const ex = findEx(exId); if (!ex) return;
+  const list = S.workout.exercises, i = list.indexOf(ex);
+  const rest = restOf(ex);
+  const opts = REST_OPTIONS.includes(rest) ? REST_OPTIONS : [...REST_OPTIONS, rest].sort((a, b) => a - b);
+  openSheet({
+    title: ex.name,
+    sub: `${catOf(ex.name)} · ${ex.sets.length} 組`,
+    attrs: `data-ex="${ex.id}"`,
+    body: `
+      <div class="section-label">組間休息</div>
+      <div class="chips">${opts.map(sec => `<button class="chip ${sec === rest ? 'on' : ''}" data-act="set-rest" data-sec="${sec}">${sec ? fmtRest(sec) : '不計時'}</button>`).join('')}</div>
+      <div class="section-label">項目</div>
+      <div class="menu">
+        <button class="menu-item" data-act="ex-rename">${ic('edit')}<span>重新命名</span></button>
+        <button class="menu-item" data-act="ex-up" ${i === 0 ? 'disabled' : ''}>${ic('up')}<span>往上移</span></button>
+        <button class="menu-item" data-act="ex-down" ${i === list.length - 1 ? 'disabled' : ''}>${ic('arrowDown')}<span>往下移</span></button>
+        <button class="menu-item danger" data-act="ex-delete">${ic('trash')}<span>從今日移除</span></button>
+      </div>`,
+  });
+}
+function openRename(exId) {
+  const ex = findEx(exId); if (!ex) return;
+  openSheet({
+    title: '重新命名',
+    attrs: `data-ex="${ex.id}"`,
+    body: `<input class="field" id="renameInput" value="${esc(ex.name)}" autocomplete="off" enterkeyhint="done" aria-label="項目名稱" />`,
+    foot: `<button class="btn soft" data-act="sheet-close">取消</button><button class="btn primary" data-act="rename-save">儲存</button>`,
+  });
+  const inp = $('#renameInput');
+  inp.focus(); inp.select();
+}
+function saveRename(exId) {
+  const ex = findEx(exId); if (!ex) return;
+  const name = ($('#renameInput').value || '').trim();
+  if (!name) { toast('名稱不能是空白'); return; }
+  ex.name = name;
+  if (!BUILTIN.has(norm(name)) && !S.custom.some(c => norm(c.name) === norm(name))) S.custom.push({ name, cat: '自訂' });
+  save(); renderAll(); closeSheet();
+}
+function openSetMenu(exId, setId) {
+  const ex = findEx(exId); if (!ex) return;
+  const idx = ex.sets.findIndex(s => s.id === setId); if (idx < 0) return;
+  const set = ex.sets[idx];
+  openSheet({
+    title: `${ex.name} · 第 ${idx + 1} 組`,
+    sub: setLabel(ex, set),
+    attrs: `data-ex="${ex.id}" data-set="${set.id}"`,
+    body: `
+      <div class="menu">
+        <button class="menu-item" data-act="set-dup">${ic('copy')}<span>複製這一組</span></button>
+        ${set.done ? `<button class="menu-item" data-act="set-undone">${ic('refresh')}<span>取消完成</span></button>` : ''}
+        <button class="menu-item danger" data-act="set-delete">${ic('trash')}<span>刪除這一組</span></button>
+      </div>`,
+  });
+}
+function openHistory() {
+  const list = S.sessions.filter(s => s.id !== S.workout.id).slice().reverse();
+  openSheet({
+    title: '訓練歷史',
+    sub: list.length ? `共 ${list.length} 次訓練` : '',
+    cls: list.length > 4 ? 'tall' : '',
+    body: list.length ? list.map(s => {
+      const st = sessionStats(s);
+      const dur = s.startedAt && s.finishedAt && s.finishedAt > s.startedAt ? ` · ${fmtDur((s.finishedAt - s.startedAt) / 1000)}` : '';
+      return `
+        <div class="hist">
+          <b>${esc(fmtDate(s.date))} <span class="muted" style="font-weight:600">· ${esc(relDay(s.date))}</span></b>
+          <div class="hist-names">${esc(s.exercises.map(e => e.name).join('、'))}</div>
+          <div class="hist-meta num">${st.sets} 組 · ${fmtVol(st.vol)} kg${dur}</div>
+          <button class="btn sm" data-act="use-session" data-id="${esc(s.id)}">帶入</button>
+        </div>`;
+    }).join('') : '<p class="pick-empty">還沒有歷史紀錄。<br>完成第一組訓練後就會出現在這裡。</p>',
+  });
+}
+function openImport() {
+  openSheet({
+    title: '匯入 Markdown 計畫',
+    sub: '支援 FuGym 匯出的筆記，或任何含 Exercise / Sets / Reps 欄位的表格',
+    body: `
+      <textarea class="field" id="importText" placeholder="| Exercise | Weight (kg) | Reps per Set | Sets |\n| --- | --- | --- | --- |\n| 槓鈴深蹲 | 80 | 5 | 5 |"></textarea>
+      <label class="btn soft block" style="margin-top:10px">${ic('upload')}選擇檔案…<input type="file" id="importFile" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden /></label>
+      <p class="hint">也可以直接把 .md 檔拖曳到這裡。項目會加到今日清單的最後面。</p>`,
+    foot: `<button class="btn primary block" data-act="import-load">加入今日清單</button>`,
+  });
+  const ta = $('#importText');
+  const readFile = file => { const r = new FileReader(); r.onload = () => { ta.value = r.result; }; r.readAsText(file); };
+  $('#importFile').addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); });
+  const sheet = $('#layer .sheet');
+  sheet.addEventListener('dragover', e => { e.preventDefault(); ta.style.boxShadow = 'inset 0 0 0 2px var(--accent)'; });
+  sheet.addEventListener('dragleave', () => { ta.style.boxShadow = ''; });
+  sheet.addEventListener('drop', e => {
+    e.preventDefault(); ta.style.boxShadow = '';
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) readFile(f); else ta.value = e.dataTransfer.getData('text/plain') || ta.value;
+  });
+}
+function openSummary() {
+  const w = S.workout, st = stats();
+  const dur = w.startedAt ? ((w.finishedAt || Date.now()) - w.startedAt) / 1000 : 0;
+  const exs = w.exercises.map(ex => ({ name: ex.name, sets: ex.sets.filter(s => s.done) })).filter(e => e.sets.length);
+  openSheet({
+    title: w.finishedAt ? '訓練完成，辛苦了！' : '訓練總結',
+    sub: fmtDate(w.date),
+    cls: exs.length > 3 ? 'tall' : '',
+    body: `
+      <div class="sum-grid">
+        <div class="sum-card"><b class="num">${dur ? fmtClock(dur) : '—'}</b><span>訓練時間</span></div>
+        <div class="sum-card"><b class="num">${fmtVol(st.vol)}</b><span>總量 kg</span></div>
+        <div class="sum-card"><b class="num">${st.done}</b><span>完成組數</span></div>
+        <div class="sum-card"><b class="num">${exs.length}</b><span>項目</span></div>
+      </div>
+      ${exs.map(e => `<div class="sum-ex"><b>${esc(e.name)}</b><div class="sum-sets">${e.sets.map(s => `<span>${esc(setText(s.w, s.r))}</span>`).join('')}</div></div>`).join('')}`,
+    foot: `
+      <button class="btn soft" data-act="copy-md">${ic('copy')}複製 Markdown</button>
+      <button class="btn soft" data-act="share-md">${ic('share')}分享</button>
+      <button class="btn soft" data-act="csv">${ic('download')}CSV</button>
+      <button class="btn primary" data-act="new-workout">${ic('refresh')}開始新的訓練</button>`,
+  });
+}
+
+/* ---------- Exercise picker ---------- */
+const picker = { q: '', cat: 'all', sel: [] };
+function openPicker() {
+  picker.q = ''; picker.sel = [];
+  picker.cat = recentNames().length ? 'recent' : 'all';
+  openSheet({
+    title: '選擇項目',
+    cls: 'tall',
+    raw: true,
+    body: `
+      <div class="search">${ic('search')}<input id="pickerQ" type="search" placeholder="搜尋，或輸入新項目名稱" autocomplete="off" enterkeyhint="done" aria-label="搜尋項目" /></div>
+      <div class="cat-row" id="pickerCats"></div>
+      <div class="sheet-body" id="pickerList"></div>`,
+    foot: `<button class="btn primary block lg" data-act="picker-confirm" id="pickerConfirm" disabled>選擇項目</button>`,
+  });
+  renderPicker();
+}
+function pickRow(name, today) {
+  const sel = picker.sel.includes(name);
+  const last = lastPerf(name);
+  const sub = [catOf(name), last ? `上次 ${perfSummary(last.sets)} · ${relDay(last.date)}` : ''].filter(Boolean).join(' · ');
+  return `
+    <button class="pick-row${sel ? ' sel' : ''}" data-act="picker-toggle" data-name="${esc(name)}" aria-pressed="${sel}">
+      <span class="pick-check">${ic('check')}</span>
+      <span class="pick-main"><span class="pick-name">${esc(name)}</span><span class="pick-sub">${esc(sub)}</span></span>
+      ${today.has(norm(name)) ? '<span class="tag">已在今日</span>' : ''}
+    </button>`;
+}
+function renderPicker() {
+  const cats = $('#pickerCats'), list = $('#pickerList');
+  if (!cats || !list) return;
+  const recent = recentNames();
+  const custom = customNames();
+  const catList = [...(recent.length ? [['recent', '最近']] : []), ['all', '全部'], ...CATS.map(c => [c, c]), ['custom', '自訂']];
+  cats.hidden = !!picker.q;
+  cats.innerHTML = catList.map(([k, l]) => `<button class="chip ${picker.cat === k ? 'on' : ''}" data-act="picker-cat" data-cat="${k}">${l}</button>`).join('');
+  const today = new Set(S.workout.exercises.map(e => norm(e.name)));
+  const q = norm(picker.q);
+  let html = '';
+  if (q) {
+    const names = allNames();
+    const matches = names.filter(n => norm(n).includes(q));
+    if (!names.some(n => norm(n) === q)) {
+      html += `<button class="pick-row add" data-act="picker-add-custom"><span class="pick-check">${ic('plus')}</span><span class="pick-main"><span class="pick-name">新增「${esc(picker.q.trim())}」</span><span class="pick-sub">加入自訂項目並選取</span></span></button>`;
+    }
+    html += matches.map(n => pickRow(n, today)).join('');
+  } else if (picker.cat === 'recent') {
+    html = `<div class="pick-group">最近做過</div>` + recent.map(n => pickRow(n, today)).join('');
+  } else if (picker.cat === 'all') {
+    for (const c of CATS) {
+      const extra = custom.filter(n => catOf(n) === c);
+      html += `<div class="pick-group">${c}</div>` + [...LIBRARY[c], ...extra].map(n => pickRow(n, today)).join('');
+    }
+    const rest = custom.filter(n => !CATS.includes(catOf(n)));
+    if (rest.length) html += `<div class="pick-group">自訂</div>` + rest.map(n => pickRow(n, today)).join('');
+  } else if (picker.cat === 'custom') {
+    html = custom.length ? custom.map(n => pickRow(n, today)).join('') : `<p class="pick-empty">還沒有自訂項目。<br>在上方搜尋欄輸入名稱，就能新增。</p>`;
   } else {
-    const text = e.dataTransfer.getData('text/plain');
-    if(text){
-      $('#trainerMarkdownInput').value = text;
-      const parsed = parsePlanMarkdown(text);
-      if(parsed.items.length === 0){ alert('無法解析訓練計畫，請確認格式。'); return; }
-      loadTrainerFromPlan(parsed.items, parsed.title || 'FuGym Plan');
-      scrollTrainerToBottom();
-    }
+    const extra = custom.filter(n => catOf(n) === picker.cat);
+    html = [...(LIBRARY[picker.cat] || []), ...extra].map(n => pickRow(n, today)).join('');
+  }
+  list.innerHTML = html || `<p class="pick-empty">找不到符合的項目</p>`;
+  updatePickerBtn();
+}
+function updatePickerBtn() {
+  const b = $('#pickerConfirm'); if (!b) return;
+  const n = picker.sel.length;
+  b.disabled = !n;
+  b.textContent = n ? `加入 ${n} 個項目` : '選擇項目';
+}
+function togglePick(name, el) {
+  const i = picker.sel.indexOf(name);
+  if (i >= 0) picker.sel.splice(i, 1); else picker.sel.push(name);
+  if (el) { el.classList.toggle('sel', i < 0); el.setAttribute('aria-pressed', String(i < 0)); }
+  haptic(8);
+  updatePickerBtn();
+}
+function addCustomFromQuery() {
+  const name = picker.q.trim();
+  if (!name) return;
+  const existing = allNames().find(n => norm(n) === norm(name));
+  const finalName = existing || name;
+  if (!existing) S.custom.push({ name, cat: CATS.includes(picker.cat) ? picker.cat : '自訂' });
+  if (!picker.sel.includes(finalName)) picker.sel.push(finalName);
+  picker.q = '';
+  const inp = $('#pickerQ'); if (inp) inp.value = '';
+  save();
+  renderPicker();
+}
+function confirmPicker() {
+  const names = picker.sel.slice();
+  if (!names.length) return;
+  closeSheet();
+  const added = addExercises(names);
+  toast(`已加入 ${added.length} 個項目`);
+  const first = added[0] && document.getElementById(`ex-${added[0].id}`);
+  if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+/* ---------- Focus (training) mode ---------- */
+let focusOpen = false;
+let focusExId = null;
+function focusTarget() {
+  const ex = findEx(focusExId);
+  if (ex) return { ex, set: ex.sets.find(s => !s.done) || null };
+  return nextTarget();
+}
+function openFocus() {
+  if (!S.workout.exercises.length) return;
+  const n = nextTarget();
+  focusExId = n ? n.ex.id : S.workout.exercises[S.workout.exercises.length - 1].id;
+  focusOpen = true;
+  hideToast();
+  $('#focus').classList.add('open');
+  document.body.classList.add('lock');
+  renderFocus();
+}
+function closeFocus() {
+  if (!focusOpen) return;
+  focusOpen = false;
+  const f = $('#focus');
+  f.classList.remove('open', 'resting', 'over');
+  f.innerHTML = '';
+  if (!sheetOpen()) document.body.classList.remove('lock');
+  renderList();
+}
+function moveFocus(d) {
+  const list = S.workout.exercises;
+  const i = list.findIndex(e => e.id === focusExId);
+  const j = Math.max(0, Math.min(list.length - 1, i + d));
+  focusExId = list[j].id;
+  renderFocus();
+}
+function renderFocus() {
+  if (!focusOpen) return;
+  const f = $('#focus'), w = S.workout, list = w.exercises;
+  if (!list.length) { closeFocus(); return; }
+  let t = focusTarget();
+  if (!t) t = { ex: list[list.length - 1], set: null };
+  const { ex, set } = t;
+  focusExId = ex.id;
+  const exIdx = list.indexOf(ex);
+  const setIdx = set ? ex.sets.indexOf(set) : -1;
+  const resting = !!S.timer;
+  const anyLeft = !!nextTarget();
+  const doneCount = ex.sets.filter(s => s.done).length;
+  const ph = set ? placeholderFor(ex, set) : { w: '', r: '' };
+  const last = lastPerf(ex.name);
+  const ls = set && last ? last.sets[setIdx] : null;
+  const since = lastDoneAt() || w.startedAt;
+
+  let center;
+  if (resting) {
+    center = `<span class="ring-label" id="fLabel">組間休息</span><span class="ring-time" id="fTime">0:00</span><span class="ring-sub num">共 ${fmtRest(S.timer.total / 1000)}</span>`;
+  } else if (set) {
+    center = since
+      ? `<span class="ring-label">第 ${setIdx + 1} / ${ex.sets.length} 組</span><span class="ring-time" id="fGap">0:00</span><span class="ring-sub">距離上一組</span>`
+      : `<span class="ring-label">第 ${setIdx + 1} / ${ex.sets.length} 組</span><span class="ring-time word">準備</span><span class="ring-sub">完成後按下方按鈕</span>`;
+  } else {
+    center = `<span class="ring-label">${anyLeft ? '此項目完成' : '全部完成'}</span><span class="ring-time">${ic('check')}</span><span class="ring-sub num">${doneCount} 組 · ${fmtVol(ex.sets.filter(s => s.done).reduce((a, s) => a + num(s.w) * num(s.r), 0))} kg</span>`;
+  }
+
+  let cta;
+  if (set) cta = `<button class="btn primary block" data-act="focus-done">${ic('check')}完成第 ${setIdx + 1} 組</button>`;
+  else if (anyLeft) cta = `<button class="btn primary block" data-act="focus-goto-next">下一個項目${ic('right')}</button><button class="btn soft block" data-act="focus-add-set">${ic('plus')}這個項目再加一組</button>`;
+  else cta = `<button class="btn primary block" data-act="finish">${ic('flag')}結束訓練並儲存</button><button class="btn soft block" data-act="focus-add-set">${ic('plus')}再加一組</button>`;
+
+  f.classList.toggle('resting', resting);
+  f.classList.remove('over');
+  f.innerHTML = `
+    <div class="focus-inner" data-ex="${ex.id}">
+      <div class="focus-top">
+        <button class="icon-btn" data-act="focus-close" aria-label="收起訓練模式">${ic('down')}</button>
+        <div class="focus-title"><small class="num">項目 ${exIdx + 1} / ${list.length}${w.startedAt ? ` · <span id="fElapsed">${fmtClock((Date.now() - w.startedAt) / 1000)}</span>` : ''}</small></div>
+        <button class="end-btn" data-act="finish">結束</button>
+      </div>
+      <div class="focus-ex">
+        <button class="icon-btn" data-act="focus-prev" ${exIdx === 0 ? 'disabled' : ''} aria-label="上一個項目">${ic('left')}</button>
+        <h2>${esc(ex.name)}</h2>
+        <button class="icon-btn" data-act="focus-next" ${exIdx === list.length - 1 ? 'disabled' : ''} aria-label="下一個項目">${ic('right')}</button>
+      </div>
+      <div class="dots" aria-hidden="true">${ex.sets.map(s => `<i class="dot${s.done ? ' done' : ''}${s === set ? ' cur' : ''}"></i>`).join('')}</div>
+      <div class="ring-wrap">
+        <svg class="ring${resting ? '' : ' idle'}" viewBox="0 0 220 220" aria-hidden="true">
+          <circle class="track" cx="110" cy="110" r="96" />
+          <circle class="bar" id="ringBar" cx="110" cy="110" r="96" />
+        </svg>
+        <div class="ring-center" aria-live="off">${center}</div>
+      </div>
+      ${resting ? `
+        <div class="rest-ctrls">
+          <button class="pill" data-act="rest-minus">−15 秒</button>
+          <button class="pill accent" data-act="rest-skip">跳過休息</button>
+          <button class="pill" data-act="rest-plus">+15 秒</button>
+        </div>` : ''}
+      ${set ? `
+        <div class="stepper-label-row">${resting ? '下一組' : '這一組'}</div>
+        <div class="steppers" data-set="${set.id}">
+          <div class="stepper">
+            <div class="stepper-label">重量 kg</div>
+            <div class="stepper-row">
+              <button data-act="step" data-field="w" data-dir="-1" aria-label="減少重量">${ic('minus')}</button>
+              <input class="focus-in" data-field="w" type="text" inputmode="decimal" autocomplete="off" value="${esc(set.w)}" placeholder="${esc(ph.w || '0')}" aria-label="重量（公斤）" />
+              <button data-act="step" data-field="w" data-dir="1" aria-label="增加重量">${ic('plus')}</button>
+            </div>
+          </div>
+          <div class="stepper">
+            <div class="stepper-label">次數</div>
+            <div class="stepper-row">
+              <button data-act="step" data-field="r" data-dir="-1" aria-label="減少次數">${ic('minus')}</button>
+              <input class="focus-in" data-field="r" type="text" inputmode="numeric" autocomplete="off" value="${esc(set.r)}" placeholder="${esc(ph.r || '0')}" aria-label="次數" />
+              <button data-act="step" data-field="r" data-dir="1" aria-label="增加次數">${ic('plus')}</button>
+            </div>
+          </div>
+        </div>
+        <p class="focus-hint">${ls ? `上次這一組：${esc(setText(ls.w, ls.r))} · ${esc(relDay(last.date))}` : `組間休息 ${restOf(ex) ? fmtRest(restOf(ex)) : '不計時'}，可在項目選單調整`}</p>` : ''}
+      <div class="focus-cta">${cta}</div>
+    </div>`;
+  if (resting) paintTimer(Date.now());
+  else { setRing(ex.sets.length ? doneCount / ex.sets.length : 0); paintGap(Date.now()); }
+}
+function focusDone() {
+  const t = focusTarget();
+  if (!t || !t.set) return;
+  const ex = t.ex;
+  toggleSet(ex.id, t.set.id);
+  if (!ex.sets.some(s => !s.done)) {
+    const n = nextTarget();
+    if (n) focusExId = n.ex.id;
+  }
+  renderFocus();
+}
+function step(field, dir) {
+  const t = focusTarget();
+  if (!t || !t.set) return;
+  const ph = placeholderFor(t.ex, t.set);
+  const base = num(t.set[field] !== '' ? t.set[field] : ph[field]);
+  const inc = field === 'w' ? S.settings.step : 1;
+  const next = Math.max(0, Math.round((base + dir * inc) * 100) / 100);
+  t.set[field] = field === 'w' ? fmtW(next) : String(Math.round(next));
+  haptic(6);
+  save();
+  const inp = $(`.focus-in[data-field="${field}"]`);
+  if (inp) inp.value = t.set[field];
+  renderDock();
+}
+
+/* ---------- Events ---------- */
+const ACTIONS = {
+  'open-picker': () => openPicker(),
+  'repeat-last': () => { const s = lastSession(); if (s) useSession(s.id); },
+  'history': () => openHistory(),
+  'use-session': ({ el }) => { closeSheet(); useSession(el.dataset.id); },
+  'import': () => openImport(),
+  'import-load': () => { if (importText($('#importText').value)) closeSheet(); },
+  'menu': () => openMenu(),
+  'settings': () => openSettings(),
+  'settings-rest': ({ el }) => { S.settings.rest = +el.dataset.sec; save(); renderAll(); $$('[data-act="settings-rest"]').forEach(c => c.classList.toggle('on', c === el)); },
+  'settings-step': ({ el }) => { S.settings.step = +el.dataset.v; save(); $$('[data-act="settings-step"]').forEach(c => c.classList.toggle('on', c === el)); },
+  'clear-today': () => { closeSheet(); newWorkout(); },
+  'copy-md': () => doCopyMd(),
+  'share-md': () => doShareMd(),
+  'csv': () => doCsv(),
+  'sheet-close': () => closeSheet(),
+  'ex-menu': ({ exId }) => openExMenu(exId),
+  'ex-rename': ({ exId }) => openRename(exId),
+  'rename-save': ({ exId }) => saveRename(exId),
+  'ex-up': ({ exId }) => moveEx(exId, -1),
+  'ex-down': ({ exId }) => moveEx(exId, 1),
+  'ex-delete': ({ exId }) => deleteEx(exId),
+  'set-rest': ({ exId, el }) => setRest(exId, +el.dataset.sec),
+  'add-set': ({ exId }) => addSet(exId),
+  'set-menu': ({ exId, setId }) => openSetMenu(exId, setId),
+  'set-dup': ({ exId, setId }) => {
+    const ex = findEx(exId); if (!ex) return;
+    const i = ex.sets.findIndex(s => s.id === setId); if (i < 0) return;
+    const ph = placeholderFor(ex, ex.sets[i]);
+    ex.sets.splice(i + 1, 0, mkSet(ex.sets[i].w || ph.w, ex.sets[i].r || ph.r));
+    if (S.workout.finishedAt) S.workout.finishedAt = null;
+    closeSheet(); save(); renderAll();
+  },
+  'set-undone': ({ exId, setId }) => { closeSheet(); toggleSet(exId, setId); },
+  'set-delete': ({ exId, setId }) => {
+    const ex = findEx(exId); if (!ex) return;
+    const i = ex.sets.findIndex(s => s.id === setId); if (i < 0) return;
+    closeSheet();
+    withUndo(`已刪除 ${ex.name} 第 ${i + 1} 組`, () => {
+      ex.sets.splice(i, 1);
+      if (S.timer && S.timer.setId === setId) S.timer = null;
+    });
+  },
+  'use-prev': ({ exId, setId }) => {
+    const ex = findEx(exId); if (!ex) return;
+    const i = ex.sets.findIndex(s => s.id === setId);
+    const p = prevSetOf(ex, i); if (!p) return;
+    ex.sets[i].w = p.w || ''; ex.sets[i].r = p.r || '';
+    haptic(8); save(); renderAll();
+  },
+  'toggle': ({ exId, setId }) => toggleSet(exId, setId),
+  'start': () => startWorkout(),
+  'open-focus': () => openFocus(),
+  'rest-minus': () => adjustRest(-15),
+  'rest-plus': () => adjustRest(15),
+  'rest-skip': () => skipRest(),
+  'finish': () => { closeSheet(); confirmFinish(); },
+  'finish-now': () => { closeSheet(); finishWorkout(); },
+  'summary': () => openSummary(),
+  'new-workout': () => { closeSheet(); newWorkout(); },
+  'focus-close': () => closeFocus(),
+  'focus-prev': () => moveFocus(-1),
+  'focus-next': () => moveFocus(1),
+  'focus-goto-next': () => { const n = nextTarget(); if (n) { focusExId = n.ex.id; renderFocus(); } },
+  'focus-add-set': () => { addSet(focusExId); },
+  'focus-done': () => focusDone(),
+  'step': ({ el }) => step(el.dataset.field, +el.dataset.dir),
+  'picker-cat': ({ el }) => { picker.cat = el.dataset.cat; renderPicker(); $('#pickerList').scrollTop = 0; },
+  'picker-toggle': ({ el }) => togglePick(el.dataset.name, el),
+  'picker-add-custom': () => addCustomFromQuery(),
+  'picker-confirm': () => confirmPicker(),
+};
+
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || el.disabled) return;
+  const fn = ACTIONS[el.dataset.act];
+  if (!fn) return;
+  e.preventDefault();
+  const exEl = el.closest('[data-ex]'), setEl = el.closest('[data-set]');
+  fn({ el, exId: exEl && exEl.dataset.ex, setId: setEl && setEl.dataset.set });
+});
+
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.matches('.set-in, .focus-in')) {
+    const exEl = el.closest('[data-ex]'), setEl = el.closest('[data-set]');
+    if (!exEl || !setEl) return;
+    const v = sanitize(el.value, el.dataset.field);
+    if (v !== el.value) el.value = v;
+    setField(exEl.dataset.ex, setEl.dataset.set, el.dataset.field, v);
+    renderStats();
+    renderDock();
+  } else if (el.id === 'pickerQ') {
+    picker.q = el.value;
+    renderPicker();
   }
 });
+
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.matches('.switch[data-setting]')) {
+    S.settings[el.dataset.setting] = el.checked;
+    save(); syncWakeLock();
+  } else if (el.id === 'dateInput') {
+    if (el.value) { S.workout.date = el.value; save(); renderAll(); }
+  }
+});
+
+// Select contents on focus so a new number can be typed right away.
+document.addEventListener('focusin', e => {
+  if (e.target.matches('.set-in, .focus-in')) {
+    const el = e.target;
+    setTimeout(() => { try { el.select(); } catch (err) {} }, 0);
+    if (el.matches('.set-in')) document.body.classList.add('typing');
+  }
+});
+document.addEventListener('focusout', e => {
+  if (e.target.matches('.set-in')) {
+    setTimeout(() => { if (!document.activeElement || !document.activeElement.matches('.set-in')) document.body.classList.remove('typing'); }, 50);
+  }
+  if (e.target.matches('.focus-in')) renderDock();
+});
+
+document.addEventListener('keydown', e => {
+  const t = e.target;
+  if (e.key === 'Escape') {
+    if (sheetOpen()) closeSheet();
+    else if (focusOpen) closeFocus();
+    return;
+  }
+  if (e.key !== 'Enter') return;
+  if (t.matches('.set-in')) {
+    e.preventDefault();
+    const inputs = $$('.set-in');
+    const next = inputs[inputs.indexOf(t) + 1];
+    if (next) next.focus(); else t.blur();
+  } else if (t.matches('.focus-in')) {
+    e.preventDefault(); t.blur();
+  } else if (t.id === 'pickerQ') {
+    e.preventDefault();
+    const q = norm(picker.q);
+    if (!q) return;
+    const exact = allNames().find(n => norm(n) === q);
+    if (exact) {
+      if (!picker.sel.includes(exact)) picker.sel.push(exact);
+      picker.q = ''; t.value = ''; renderPicker();
+    } else addCustomFromQuery();
+  } else if (t.id === 'renameInput') {
+    e.preventDefault();
+    const exEl = t.closest('[data-ex]');
+    if (exEl) saveRename(exEl.dataset.ex);
+  }
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') { tick(); }
+  syncWakeLock();
+});
+
+/* ---------- Boot ---------- */
+(function boot() {
+  $('#brandMark').innerHTML = ic('dumbbell');
+  $('#menuBtn').innerHTML = ic('more');
+  $('#dateIcon').innerHTML = ic('cal');
+  const today = todayISO();
+  const w = S.workout;
+  if (w.finishedAt && w.date !== today) S.workout = freshWorkout();
+  else if (!w.startedAt && w.date < today) w.date = today;
+  if (S.timer && (!findEx(S.timer.exId) || Date.now() - S.timer.end > 600000)) S.timer = null;
+  save();
+  renderAll();
+  syncWakeLock();
+  setInterval(tick, 250);
+})();
 </script>
 </body>
 </html>
