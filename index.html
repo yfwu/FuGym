@@ -284,12 +284,13 @@ textarea.field { min-height: 170px; resize: vertical; font-family: ui-monospace,
 .pick-empty { text-align: center; color: var(--text-3); padding: 30px 10px; font-size: 14px; }
 
 /* History & summary */
-.hist { padding: 14px 0; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; }
+.hist { width: 100%; text-align: left; padding: 14px 2px; border-bottom: 1px solid var(--line); display: grid; grid-template-columns: 1fr auto; gap: 3px 12px; align-items: center; }
+.hist:active { background: var(--surface-2); }
+.hist > .ic { grid-column: 2; grid-row: 1 / span 3; color: var(--text-3); }
 .hist:last-child { border-bottom: 0; }
 .hist b { font-size: 15px; }
 .hist-names { font-size: 13.5px; color: var(--text-2); grid-column: 1; }
 .hist-meta { font-size: 12.5px; color: var(--text-3); grid-column: 1; }
-.hist .btn { grid-column: 2; grid-row: 1 / span 3; }
 .sum-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 8px; }
 .sum-card { background: var(--surface-2); border-radius: 14px; padding: 12px 14px; }
 .sum-card b { font-size: 22px; display: block; font-weight: 800; }
@@ -300,6 +301,32 @@ textarea.field { min-height: 170px; resize: vertical; font-family: ui-monospace,
 .sum-sets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
 .sum-sets span { font-size: 13px; padding: 3px 8px; border-radius: 8px; background: var(--surface-2); font-weight: 650; font-variant-numeric: tabular-nums; }
 .sheet-foot .btn { flex: 1 1 40%; }
+
+/* Export / import */
+.fmt-list { display: flex; flex-direction: column; gap: 8px; }
+.fmt { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border-radius: 14px; background: var(--surface-2); text-align: left; box-shadow: inset 0 0 0 2px transparent; transition: box-shadow .15s, background .15s; }
+.fmt.on { background: var(--accent-soft); box-shadow: inset 0 0 0 2px var(--accent); }
+.fmt-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.fmt-main b { font-size: 15px; }
+.fmt-main small { font-size: 12.5px; color: var(--text-3); }
+.fmt-badge { flex: none; min-width: 44px; height: 26px; padding: 0 6px; border-radius: 7px; background: var(--surface); color: var(--text-2); font-size: 11px; font-weight: 800; letter-spacing: .04em; display: inline-grid; place-items: center; box-shadow: inset 0 0 0 1px var(--line); }
+.fmt.on .fmt-badge { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+.fmt-badge.sm { min-width: 42px; height: 22px; font-size: 10.5px; }
+.fmt-radio { width: 22px; height: 22px; border-radius: 50%; box-shadow: inset 0 0 0 2px var(--surface-3); flex: none; transition: box-shadow .15s; }
+.fmt.on .fmt-radio { box-shadow: inset 0 0 0 7px var(--accent); }
+.preview { margin: 0; background: var(--surface-2); border-radius: 12px; padding: 12px 14px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px; line-height: 1.55; white-space: pre; overflow: auto; max-height: 260px; color: var(--text-2); }
+.imp-card { display: flex; gap: 12px; align-items: center; margin-top: 14px; padding: 12px 14px; border-radius: 14px; background: var(--accent-soft); }
+.imp-card > div { display: flex; flex-direction: column; min-width: 0; }
+.imp-card b { font-size: 15px; }
+.imp-card span:not(.fmt-badge) { font-size: 13px; color: var(--text-2); }
+.imp-card.warn { background: var(--warn-soft); flex-direction: column; align-items: flex-start; gap: 2px; }
+.imp-list { margin-top: 6px; }
+.imp-list > div { display: flex; gap: 2px 10px; align-items: baseline; flex-wrap: wrap; padding: 9px 2px; border-bottom: 1px solid var(--line); font-size: 13px; }
+.imp-list b { font-size: 13.5px; white-space: nowrap; }
+.imp-list span { color: var(--text-2); flex: 1; min-width: 0; }
+.imp-list em { font-style: normal; }
+.fmt-help > div { display: flex; gap: 10px; align-items: flex-start; padding: 5px 0; font-size: 13px; color: var(--text-2); }
+.btn.primary.danger-fill { background: var(--danger); color: #fff; }
 
 /* Focus mode */
 .focus { position: fixed; inset: 0; z-index: 40; background: var(--bg); display: none; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); padding-bottom: var(--safe-b); }
@@ -458,18 +485,46 @@ const ICONS = {
 };
 const ic = (name, cls = '') => `<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[name] || ''}</svg>`;
 
-/* ---------- Exercise library ---------- */
-const LIBRARY = {
-  '胸': ['槓鈴臥推', '啞鈴臥推', '上斜槓鈴臥推', '上斜啞鈴臥推', '史密斯臥推', '機械式胸推', '蝴蝶機夾胸', '繩索夾胸', '雙槓撐體', '伏地挺身'],
-  '背': ['引體向上', '滑輪下拉', '槓鈴划船', '啞鈴單臂划船', '坐姿划船', 'T 槓划船', '直臂下壓', '傳統硬舉'],
-  '腿': ['槓鈴深蹲', '前蹲舉', '腿推舉', '哈克深蹲', '羅馬尼亞硬舉', '保加利亞分腿蹲', '弓箭步', '腿伸屈', '腿後勾', '臀推', '站姿提踵'],
-  '肩': ['槓鈴肩推', '啞鈴肩推', '機械式肩推', '側平舉', '繩索側平舉', '前平舉', '反向飛鳥', '臉拉', '聳肩'],
-  '手臂': ['槓鈴彎舉', '啞鈴彎舉', '錘式彎舉', '牧師椅彎舉', '繩索三頭下壓', '過頭三頭伸展', '仰臥三頭伸展', '窄握臥推'],
-  '核心': ['棒式', '側棒式', '懸垂舉腿', '捲腹', '繩索捲腹', '健腹輪', '俄羅斯轉體'],
-};
-const CATS = Object.keys(LIBRARY);
-const BUILTIN = new Map();
-for (const [cat, names] of Object.entries(LIBRARY)) names.forEach(n => BUILTIN.set(norm(n), cat));
+/* ---------- Exercise library: 30 common presets ---------- */
+// sets × reps is the suggested start for an exercise with no history; rest is in seconds.
+// unit 'sec' = timed hold (the reps column becomes seconds); bw = bodyweight (weight optional).
+const PRESETS = [
+  { name: '槓鈴臥推', cat: '胸', sets: 3, reps: 8, rest: 150 },
+  { name: '啞鈴臥推', cat: '胸', sets: 3, reps: 10, rest: 120 },
+  { name: '上斜啞鈴臥推', cat: '胸', sets: 3, reps: 10, rest: 120 },
+  { name: '繩索夾胸', cat: '胸', sets: 3, reps: 12, rest: 60 },
+  { name: '伏地挺身', cat: '胸', sets: 3, reps: 15, rest: 60, bw: true },
+  { name: '引體向上', cat: '背', sets: 3, reps: 8, rest: 120, bw: true },
+  { name: '滑輪下拉', cat: '背', sets: 3, reps: 10, rest: 90 },
+  { name: '槓鈴划船', cat: '背', sets: 3, reps: 8, rest: 120 },
+  { name: '啞鈴單臂划船', cat: '背', sets: 3, reps: 10, rest: 90 },
+  { name: '坐姿划船', cat: '背', sets: 3, reps: 10, rest: 90 },
+  { name: '傳統硬舉', cat: '背', sets: 3, reps: 5, rest: 180 },
+  { name: '槓鈴深蹲', cat: '腿', sets: 3, reps: 5, rest: 180 },
+  { name: '腿推舉', cat: '腿', sets: 3, reps: 10, rest: 120 },
+  { name: '羅馬尼亞硬舉', cat: '腿', sets: 3, reps: 8, rest: 120 },
+  { name: '保加利亞分腿蹲', cat: '腿', sets: 3, reps: 10, rest: 90 },
+  { name: '腿伸屈', cat: '腿', sets: 3, reps: 12, rest: 60 },
+  { name: '腿後勾', cat: '腿', sets: 3, reps: 12, rest: 60 },
+  { name: '臀推', cat: '腿', sets: 3, reps: 10, rest: 90 },
+  { name: '槓鈴肩推', cat: '肩', sets: 3, reps: 6, rest: 150 },
+  { name: '啞鈴肩推', cat: '肩', sets: 3, reps: 10, rest: 90 },
+  { name: '側平舉', cat: '肩', sets: 3, reps: 15, rest: 60 },
+  { name: '臉拉', cat: '肩', sets: 3, reps: 15, rest: 60 },
+  { name: '槓鈴彎舉', cat: '手臂', sets: 3, reps: 10, rest: 60 },
+  { name: '錘式彎舉', cat: '手臂', sets: 3, reps: 12, rest: 60 },
+  { name: '繩索三頭下壓', cat: '手臂', sets: 3, reps: 12, rest: 60 },
+  { name: '過頭三頭伸展', cat: '手臂', sets: 3, reps: 12, rest: 60 },
+  { name: '棒式', cat: '核心', sets: 3, reps: 60, rest: 60, unit: 'sec', bw: true },
+  { name: '懸垂舉腿', cat: '核心', sets: 3, reps: 12, rest: 60, bw: true },
+  { name: '捲腹', cat: '核心', sets: 3, reps: 20, rest: 45, bw: true },
+  { name: '健腹輪', cat: '核心', sets: 3, reps: 10, rest: 60, bw: true },
+];
+const CATS = ['胸', '背', '腿', '肩', '手臂', '核心'];
+const LIBRARY = {};
+CATS.forEach(c => { LIBRARY[c] = PRESETS.filter(p => p.cat === c).map(p => p.name); });
+const PRESET = new Map(PRESETS.map(p => [norm(p.name), p]));
+const BUILTIN = new Map(PRESETS.map(p => [norm(p.name), p.cat]));
 const REST_OPTIONS = [0, 30, 45, 60, 90, 120, 150, 180, 240, 300];
 const STEP_OPTIONS = [1, 2, 2.5, 5];
 
@@ -486,7 +541,8 @@ function freshState() {
     sessions: [],
     custom: [],
     restPrefs: {},
-    settings: { rest: 90, step: 2.5, sound: true, vibrate: true, wake: true },
+    units: {},
+    settings: { rest: 90, step: 2.5, sound: true, vibrate: true, wake: true, obsLinks: true, exportFormat: 'obsidian' },
     timer: null,
   };
 }
@@ -499,6 +555,7 @@ function normalize(d) {
     if (Array.isArray(d.sessions)) s.sessions = d.sessions.filter(x => x && Array.isArray(x.exercises));
     if (Array.isArray(d.custom)) s.custom = d.custom.filter(x => x && x.name);
     if (d.restPrefs && typeof d.restPrefs === 'object') s.restPrefs = d.restPrefs;
+    if (d.units && typeof d.units === 'object') s.units = d.units;
     Object.assign(s.settings, d.settings || {});
     s.timer = d.timer || null;
   }
@@ -583,13 +640,26 @@ function archive() {
   if (!exercises.length) { if (i >= 0) S.sessions.splice(i, 1); return; }
   const rec = { id: w.id, date: w.date, startedAt: w.startedAt, finishedAt: w.finishedAt, exercises };
   if (i >= 0) S.sessions[i] = rec; else S.sessions.push(rec);
+  sortSessions();
+}
+function sortSessions() {
   S.sessions.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.startedAt || 0) - (b.startedAt || 0));
-  if (S.sessions.length > 400) S.sessions.splice(0, S.sessions.length - 400);
+  if (S.sessions.length > 2000) S.sessions.splice(0, S.sessions.length - 2000);
 }
 
 /* ---------- Derived data ---------- */
 const findEx = id => S.workout.exercises.find(e => e.id === id);
 const restOf = ex => (ex && ex.rest != null) ? ex.rest : S.settings.rest;
+const presetOf = name => PRESET.get(norm(name)) || null;
+const unitOf = name => (S.units && S.units[norm(name)]) || (presetOf(name) || {}).unit || 'reps';
+const isBw = name => !!(presetOf(name) || {}).bw;
+// Rest for a newly added exercise: your own setting > last time > preset suggestion > global default.
+function defaultRest(name, lastRest) {
+  if (S.restPrefs[name] != null) return S.restPrefs[name];
+  if (lastRest != null) return lastRest;
+  const p = presetOf(name);
+  return p ? p.rest : null;
+}
 
 function lastPerf(name) {
   const key = norm(name);
@@ -680,22 +750,24 @@ function prevSetOf(ex, idx) {
   const last = lastPerf(ex.name);
   return last && last.sets[idx] ? last.sets[idx] : null;
 }
-function setText(w, r) {
-  if (w && r) return `${w}×${r}`;
-  if (r) return `${r} 次`;
+function setText(w, r, unit = 'reps') {
+  const sec = unit === 'sec';
+  if (w && r) return `${w}×${r}${sec ? '秒' : ''}`;
+  if (r) return `${r} ${sec ? '秒' : '次'}`;
   if (w) return `${w} kg`;
   return '—';
 }
 function setLabel(ex, set) {
   const ph = placeholderFor(ex, set);
   const w = set.w || ph.w, r = set.r || ph.r;
-  return `${w || '–'} kg × ${r || '–'}`;
+  const wt = w ? `${w} kg` : (isBw(ex.name) ? '自重' : '– kg');
+  return `${wt} × ${r || '–'}${unitOf(ex.name) === 'sec' ? ' 秒' : ''}`;
 }
-function perfSummary(sets) {
+function perfSummary(sets, unit) {
   if (!sets || !sets.length) return '';
   let top = sets[0];
   for (const s of sets) if (num(s.w) > num(top.w)) top = s;
-  return `${sets.length} 組 · ${setText(top.w, top.r)}`;
+  return `${sets.length} 組 · ${setText(top.w, top.r, unit)}`;
 }
 
 /* ---------- Feedback: sound, vibration, wake lock ---------- */
@@ -766,9 +838,12 @@ function addExercises(names) {
   const added = [];
   for (const name of names) {
     const last = lastPerf(name);
-    const sets = last && last.sets.length ? last.sets.map(s => mkSet(s.w, s.r)) : [mkSet(), mkSet(), mkSet()];
-    const pref = S.restPrefs[name];
-    const ex = { id: uid(), name, rest: pref != null ? pref : (last && last.rest != null ? last.rest : null), sets };
+    const p = presetOf(name);
+    let sets;
+    if (last && last.sets.length) sets = last.sets.map(s => mkSet(s.w, s.r));
+    else if (p) sets = Array.from({ length: p.sets }, () => mkSet('', p.reps));
+    else sets = [mkSet(), mkSet(), mkSet()];
+    const ex = { id: uid(), name, rest: defaultRest(name, last ? last.rest : null), sets };
     S.workout.exercises.push(ex);
     added.push(ex);
   }
@@ -776,20 +851,24 @@ function addExercises(names) {
   save(); renderAll();
   return added;
 }
-function useSession(id) {
-  const s = S.sessions.find(x => x.id === id);
-  if (!s) return;
+// Copy a session's exercises (with its weights and reps) into today's list.
+function planFrom(s) {
   const have = new Set(S.workout.exercises.map(e => norm(e.name)));
   let n = 0;
   for (const e of s.exercises) {
-    if (have.has(norm(e.name))) continue;
-    const pref = S.restPrefs[e.name];
-    S.workout.exercises.push({ id: uid(), name: e.name, rest: pref != null ? pref : (e.rest ?? null), sets: e.sets.map(x => mkSet(x.w, x.r)) });
+    if (have.has(norm(e.name)) || !e.sets.length) continue;
+    have.add(norm(e.name));
+    S.workout.exercises.push({ id: uid(), name: e.name, rest: defaultRest(e.name, e.rest ?? null), sets: e.sets.map(x => mkSet(x.w, x.r)) });
     n++;
   }
   if (n && S.workout.finishedAt) S.workout.finishedAt = null;
   save(); renderAll();
   toast(n ? `已帶入 ${n} 個項目，重量與次數沿用 ${relDay(s.date)}` : '這些項目都已經在今日清單中');
+  return n;
+}
+function useSession(id) {
+  const s = S.sessions.find(x => x.id === id);
+  if (s) planFrom(s);
 }
 function addSet(exId) {
   const ex = findEx(exId); if (!ex) return;
@@ -917,53 +996,101 @@ function setRest(exId, sec) {
   $$('[data-act="set-rest"]').forEach(c => c.classList.toggle('on', +c.dataset.sec === sec));
 }
 
-/* ---------- Export ---------- */
+/* ---------- Export: formats ---------- */
 function exportExercises() {
   const anyDone = S.workout.exercises.some(e => e.sets.some(s => s.done));
   return S.workout.exercises
     .map(ex => ({ name: ex.name, sets: ex.sets.filter(s => anyDone ? s.done : (s.w || s.r)) }))
     .filter(ex => ex.sets.length);
 }
+// Today's workout in the same shape as a history session (completed sets, or the plan if nothing is done yet).
+function workoutAsSession() {
+  const w = S.workout;
+  return {
+    id: w.id, date: w.date, startedAt: w.startedAt,
+    finishedAt: w.finishedAt || (w.startedAt ? (lastDoneAt() || null) : null),
+    exercises: exportExercises().map(e => ({ name: e.name, sets: e.sets.map(x => ({ w: x.w, r: x.r, doneAt: x.doneAt, gap: x.gap })) })),
+  };
+}
+function sessionDur(s) { return s.startedAt && s.finishedAt && s.finishedAt > s.startedAt ? (s.finishedAt - s.startedAt) / 1000 : 0; }
+function groupSets(sets) {
+  const out = [];
+  for (const x of sets) {
+    const g = out[out.length - 1];
+    if (g && g.w === x.w && g.r === x.r) g.n++; else out.push({ w: x.w, r: x.r, n: 1 });
+  }
+  return out;
+}
+function dateWithDay(iso) { const d = parseDay(iso); return d ? `${iso}（週${'日一二三四五六'[d.getDay()]}）` : iso; }
+function summaryLine(s) {
+  const st = sessionStats(s), dur = sessionDur(s);
+  return [dur ? fmtDur(dur) : '', `${st.sets} 組`, `總量 ${fmtVol(st.vol)} kg`, `${s.exercises.length} 個項目`].filter(Boolean).join(' · ');
+}
 function mdSafe(t) { return String(t ?? '').replace(/\|/g, '\\|').replace(/\n/g, ' '); }
-function toMarkdown() {
-  const date = S.workout.date;
+
+// Original blog format (Jekyll front matter + one table).
+function toBlog(s) {
   const rows = [];
-  for (const ex of exportExercises()) {
-    let prev = null;
-    for (const s of ex.sets) {
-      if (prev && prev.w === s.w && prev.r === s.r) { prev.n++; continue; }
-      prev = { name: ex.name, w: s.w, r: s.r, n: 1 };
-      rows.push(prev);
-    }
+  for (const e of s.exercises) {
+    const sec = unitOf(e.name) === 'sec';
+    for (const g of groupSets(e.sets)) rows.push(`| ${mdSafe(e.name)} | ${mdSafe(g.w)} | ${mdSafe(g.r && sec ? `${g.r}s` : g.r)} | ${g.n} |`);
   }
-  if (!rows.length) return '';
-  return [
-    '---',
-    `title: FuGym ${date}`,
-    'category: Gym',
-    'layout: post',
-    `date: ${date}`,
-    'tags: []',
-    '---',
-    '',
-    '| Exercise | Weight (kg) | Reps per Set | Sets |',
-    '| --- | --- | --- | --- |',
-    ...rows.map(r => `| ${mdSafe(r.name)} | ${mdSafe(r.w)} | ${mdSafe(r.r)} | ${r.n} |`),
-  ].join('\n');
+  return ['---', `title: FuGym ${s.date}`, 'category: Gym', 'layout: post', `date: ${s.date}`, 'tags: []', '---', '',
+    '| Exercise | Weight (kg) | Reps per Set | Sets |', '| --- | --- | --- | --- |', ...rows].join('\n');
 }
-function toCsv() {
-  const q = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
-  const lines = [['date', 'exercise', 'set', 'weight_kg', 'reps', 'completed_at', 'seconds_since_prev_set'].join(',')];
-  for (const ex of S.workout.exercises) {
-    let n = 0;
-    for (const s of ex.sets) {
-      if (!s.done) continue;
-      n++;
-      lines.push([S.workout.date, ex.name, n, s.w, s.r, s.doneAt ? localStamp(s.doneAt) : '', s.gap ?? ''].map(q).join(','));
-    }
+// Obsidian note: properties for Dataview / Bases, a summary callout, one table per exercise.
+function toObsidian(s) {
+  const st = sessionStats(s), dur = sessionDur(s);
+  const q = v => JSON.stringify(String(v));
+  const link = n => S.settings.obsLinks ? `[[${n}]]` : n;
+  const out = ['---', `date: ${s.date}`, 'type: workout'];
+  if (dur) out.push(`duration_min: ${Math.round(dur / 60)}`);
+  out.push(`sets: ${st.sets}`, `volume_kg: ${Math.round(st.vol)}`, 'exercises:', ...s.exercises.map(e => `  - ${q(link(e.name))}`),
+    'tags:', '  - gym', '  - fugym', '---', '', `# ${s.date} 重訓紀錄`, '', `> [!summary] ${fmtDate(s.date)}`, `> ${summaryLine(s)}`);
+  for (const e of s.exercises) {
+    const sec = unitOf(e.name) === 'sec';
+    const vol = e.sets.reduce((a, x) => a + num(x.w) * num(x.r), 0);
+    out.push('', `## ${e.name}`, '', `| 組 | 重量 (kg) | ${sec ? '秒數' : '次數'} |`, '| ---: | ---: | ---: |',
+      ...e.sets.map((x, i) => `| ${i + 1} | ${mdSafe(x.w || '-')} | ${mdSafe(x.r || '-')} |`));
+    if (vol && !sec) out.push('', `總量 ${fmtVol(vol)} kg`);
   }
-  return lines.length > 1 ? lines.join('\n') : '';
+  return out.join('\n') + '\n';
 }
+// Plain text for chat apps / notes. FuGym can read this format back.
+function toText(list) {
+  return list.map(s => {
+    const lines = [`FuGym 訓練紀錄｜${dateWithDay(s.date)}`, summaryLine(s), ''];
+    s.exercises.forEach((e, i) => {
+      const sec = unitOf(e.name) === 'sec';
+      lines.push(`${i + 1}. ${e.name}`);
+      for (const g of groupSets(e.sets)) {
+        const parts = [];
+        if (g.w) parts.push(`${g.w} kg`);
+        if (g.r) parts.push(`${g.r} ${sec ? '秒' : '次'}`);
+        if (!parts.length) parts.push('完成');
+        lines.push(`   ${parts.join(' × ')}${g.n > 1 ? ` × ${g.n} 組` : ''}`);
+      }
+    });
+    return lines.join('\n');
+  }).join('\n\n────────────\n\n');
+}
+function toCsv(list) {
+  const q = v => { const t = String(v ?? ''); return /[",\r\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+  const lines = ['date,exercise,set,weight_kg,reps,unit,completed_at,seconds_since_prev_set,session_id'];
+  for (const s of list) for (const e of s.exercises) {
+    const u = unitOf(e.name);
+    e.sets.forEach((x, i) => lines.push([s.date, e.name, i + 1, x.w, x.r, u, x.doneAt ? localStamp(x.doneAt) : '', x.gap ?? '', s.id].map(q).join(',')));
+  }
+  return lines.length > 1 ? lines.join('\r\n') : '';
+}
+function toBackup() {
+  return JSON.stringify({
+    app: 'FuGym', format: 'fugym-backup', version: 3, exportedAt: new Date().toISOString(),
+    data: { sessions: S.sessions, custom: S.custom, restPrefs: S.restPrefs, units: S.units, settings: S.settings, workout: S.workout },
+  }, null, 2);
+}
+
+/* ---------- Export: delivery ---------- */
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); return true; } catch (e) {}
   try {
@@ -982,9 +1109,9 @@ function download(text, filename, mime) {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1500);
 }
-async function shareFile(text, filename, mime, title) {
+async function shareFile(text, filename, mime, title, asText = false) {
   try {
-    if (window.File && navigator.canShare) {
+    if (!asText && window.File && navigator.canShare) {
       const file = new File([text], filename, { type: mime });
       if (navigator.canShare({ files: [file] })) { await navigator.share({ title, files: [file] }); return; }
     }
@@ -995,79 +1122,504 @@ async function shareFile(text, filename, mime, title) {
   if (await copyText(text)) toast('這個瀏覽器無法分享，已改為複製到剪貼簿');
   else download(text, filename, mime);
 }
-async function doCopyMd() {
-  const md = toMarkdown();
-  if (!md) { toast('目前沒有可以匯出的內容'); return; }
-  toast(await copyText(md) ? 'Markdown 已複製到剪貼簿' : '複製失敗，請改用分享或下載');
+
+/* ---------- Export: sheet ---------- */
+const EXPORTS = [
+  { id: 'obsidian', badge: 'OBS', label: 'Obsidian 筆記', desc: 'YAML 屬性、摘要，每個項目一張組數表', ext: 'md', mime: 'text/markdown', single: true },
+  { id: 'blog', badge: 'MD', label: '部落格 Markdown', desc: '原本的 Jekyll 部落格格式，一張總表', ext: 'md', mime: 'text/markdown', single: true },
+  { id: 'text', badge: 'TXT', label: '文字紀錄', desc: '適合貼到 LINE、備忘錄或訊息', ext: 'txt', mime: 'text/plain', asText: true },
+  { id: 'csv', badge: 'CSV', label: 'CSV 試算表', desc: '每組一列，Excel、Google 試算表可開', ext: 'csv', mime: 'text/csv' },
+  { id: 'json', badge: 'JSON', label: '完整備份', desc: '所有資料，換手機或還原用', ext: 'json', mime: 'application/json', backup: true },
+];
+const exp = { src: 'workout', scope: 'one', fmt: 'obsidian' };
+const expFormat = () => EXPORTS.find(f => f.id === exp.fmt) || EXPORTS[0];
+function expSource() {
+  if (exp.src === 'workout') return workoutAsSession();
+  return S.sessions.find(x => x.id === exp.src) || null;
 }
-function doShareMd() {
-  const md = toMarkdown();
-  if (!md) { toast('目前沒有可以匯出的內容'); return; }
-  shareFile(md, `${S.workout.date}-gym.md`, 'text/markdown', 'FuGym 健身筆記');
+function expSessions() {
+  if (exp.scope === 'all') return S.sessions.slice();
+  const one = expSource();
+  return one && one.exercises.length ? [one] : [];
 }
-function doCsv() {
-  const csv = toCsv();
-  if (!csv) { toast('還沒有完成的組數可以匯出'); return; }
-  download(csv, `fugym-${S.workout.date}.csv`, 'text/csv');
+function buildExport() {
+  const f = expFormat();
+  if (f.backup) return toBackup();
+  const list = expSessions();
+  if (!list.length) return '';
+  if (f.id === 'obsidian') return toObsidian(list[0]);
+  if (f.id === 'blog') return toBlog(list[0]);
+  if (f.id === 'text') return toText(list);
+  return toCsv(list);
+}
+function exportFilename() {
+  const f = expFormat();
+  if (f.backup) return `fugym-backup-${todayISO()}.json`;
+  if (exp.scope === 'all') return `fugym-history-${todayISO()}.${f.ext}`;
+  const d = (expSource() || {}).date || todayISO();
+  if (f.id === 'obsidian') return `${d} 重訓.md`;
+  if (f.id === 'blog') return `${d}-gym.md`;
+  return `fugym-${d}.${f.ext}`;
+}
+function openExport(src = 'workout') {
+  exp.src = src;
+  const one = expSource();
+  exp.scope = one && one.exercises.length ? 'one' : 'all';
+  exp.fmt = EXPORTS.some(f => f.id === S.settings.exportFormat) ? S.settings.exportFormat : 'obsidian';
+  if (exp.scope === 'all' && expFormat().single) exp.fmt = 'text';
+  openSheet({
+    title: '匯出',
+    sub: src === 'workout' ? `今天的訓練 · ${fmtDate(S.workout.date)}` : (one ? fmtDate(one.date) : ''),
+    cls: 'tall',
+    body: '<div id="exportBody"></div>',
+    foot: `<div class="dock-row" style="width:100%"><button class="btn soft grow" data-act="exp-copy">${ic('copy')}複製</button><button class="btn soft grow" data-act="exp-share">${ic('share')}分享</button><button class="btn primary grow" data-act="exp-download">${ic('download')}下載</button></div>`,
+  });
+  renderExport();
+}
+function renderExport() {
+  const box = $('#exportBody'); if (!box) return;
+  const f = expFormat();
+  const one = expSource();
+  const hasOne = !!(one && one.exercises.length);
+  const nAll = S.sessions.length;
+  const text = buildExport();
+  const planOnly = exp.src === 'workout' && !S.workout.exercises.some(e => e.sets.some(x => x.done));
+  const oneLabel = exp.src === 'workout' ? `今天這次${planOnly ? '（計畫）' : ''}` : `${one ? relDay(one.date) : ''} 這次`;
+  box.innerHTML = `
+    ${f.backup ? '' : `
+      <div class="section-label">範圍</div>
+      <div class="chips">
+        <button class="chip ${exp.scope === 'one' ? 'on' : ''}" data-act="exp-scope" data-scope="one" ${hasOne ? '' : 'disabled'}>${esc(oneLabel)}</button>
+        <button class="chip ${exp.scope === 'all' ? 'on' : ''}" data-act="exp-scope" data-scope="all" ${nAll ? '' : 'disabled'}>全部歷史 · ${nAll} 次</button>
+      </div>`}
+    <div class="section-label">格式</div>
+    <div class="fmt-list">${EXPORTS.map(x => {
+      const dis = x.single && exp.scope === 'all' && !f.backup;
+      return `<button class="fmt${x.id === f.id ? ' on' : ''}" data-act="exp-fmt" data-fmt="${x.id}" ${dis ? 'disabled' : ''} aria-pressed="${x.id === f.id}">
+        <span class="fmt-badge">${x.badge}</span>
+        <span class="fmt-main"><b>${x.label}</b><small>${dis ? '一次只能匯出一次訓練' : x.desc}</small></span>
+        <span class="fmt-radio"></span></button>`;
+    }).join('')}</div>
+    ${f.id === 'obsidian' ? `<label class="toggle-row" style="border-bottom:0"><span>項目加上 [[雙向連結]]<small>寫在 exercises 屬性，可在 Obsidian 連到每個動作的筆記</small></span><input type="checkbox" class="switch" data-setting="obsLinks" ${S.settings.obsLinks ? 'checked' : ''} /></label>` : ''}
+    <div class="section-label">預覽 · ${esc(exportFilename())}</div>
+    ${text ? `<pre class="preview">${esc(text.length > 6000 ? `${text.slice(0, 6000)}\n…` : text)}</pre>` : '<p class="pick-empty">沒有可以匯出的內容。<br>先完成幾組訓練，或從訓練歷史挑一次。</p>'}`;
+  $$('[data-act="exp-copy"], [data-act="exp-share"], [data-act="exp-download"]').forEach(b => { b.disabled = !text; });
 }
 
-/* ---------- Import ---------- */
-function parsePlan(text) {
+/* ---------- Import: parsers ---------- */
+function splitRow(line) {
+  return line.trim().replace(/\\\|/g, '\u0001').replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.replace(/\u0001/g, '|').trim());
+}
+const isSepRow = c => c.every(x => !x || /^:?-{2,}:?$/.test(x));
+function pickCol(head, keys) {
+  for (const k of keys) { const i = head.findIndex(h => h.includes(k)); if (i >= 0) return i; }
+  return -1;
+}
+const firstInt = v => { const m = String(v ?? '').match(/\d+/); return m ? m[0] : ''; };
+const clampSets = v => Math.max(1, Math.min(30, parseInt(v, 10) || 1));
+function normDate(v) {
+  v = String(v || '').trim();
+  if (/\d{4}-\d{2}-\d{2}T\d/.test(v)) { const t = Date.parse(v); if (!isNaN(t)) return localStamp(t).slice(0, 10); }
+  const m = v.match(/(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})/);
+  return m ? `${m[1]}-${pad(+m[2])}-${pad(+m[3])}` : '';
+}
+function parseStamp(v) {
+  v = String(v || '').trim();
+  if (!v) return null;
+  const t = Date.parse(/^\d{4}-\d{2}-\d{2} \d/.test(v) ? v.replace(' ', 'T') : v);
+  return isNaN(t) ? null : t;
+}
+function getEx(list, name) {
+  let ex = list.find(e => e.name === name);
+  if (!ex) { ex = { name, rest: null, unit: null, sets: [] }; list.push(ex); }
+  return ex;
+}
+function finishImported(s, durSec) {
+  s.exercises = s.exercises.filter(e => e.sets.length);
+  if (!s.startedAt && durSec) {
+    const base = parseDay(s.date);
+    if (base) { s.startedAt = base.getTime() + 12 * 3600e3; s.finishedAt = s.startedAt + durSec * 1000; }
+  }
+  return s;
+}
+const newImported = date => ({ id: null, date: date || todayISO(), startedAt: null, finishedAt: null, exercises: [] });
+
+// Markdown tables that have an Exercise column (blog export, old plan export, generic tables).
+function parseExerciseTable(text) {
   const lines = String(text || '').split(/\r?\n/);
-  const split = line => line.trim().replace(/\\\|/g, '\u0001').replace(/^\|/, '').replace(/\|$/, '').split('|').map(c => c.replace(/\u0001/g, '|').trim());
   const out = [];
-  const push = (name, w, r, n, rest) => {
-    name = String(name || '').trim();
-    if (!name || name === '-') return;
-    let ex = out[out.length - 1];
-    if (!ex || ex.name !== name) { ex = { name, rest: null, sets: [] }; out.push(ex); }
-    if (Number.isFinite(rest)) ex.rest = rest;
-    for (let i = 0; i < n; i++) ex.sets.push({ w, r });
-  };
   const hi = lines.findIndex(l => /^\s*\|/.test(l) && /(exercise|動作|項目)/i.test(l));
-  if (hi !== -1) {
-    const head = split(lines[hi]).map(h => h.toLowerCase());
-    const col = (...keys) => head.findIndex(h => keys.some(k => h.includes(k)));
-    const iName = col('exercise', '動作', '項目');
-    const iW = col('weight', '重量', 'kg');
-    const iR = col('reps', '次');
-    const iSets = head.findIndex(h => /^sets?\b/.test(h) || h.includes('組數') || h === '組');
-    const iRest = col('rest', '休息');
-    const iNote = col('note', '備註');
-    for (let i = hi + 1; i < lines.length; i++) {
-      const line = lines[i].trim();
-      if (!line.startsWith('|')) { if (out.length) break; continue; }
-      const c = split(line);
-      if (c.every(x => !x || /^:?-{2,}:?$/.test(x))) continue;
-      let w = iW >= 0 ? (c[iW] || '') : '';
-      if (!w && iNote >= 0) { const m = (c[iNote] || '').match(/([\d.]+)\s*kg/i); if (m) w = m[1]; }
-      const rm = iR >= 0 ? String(c[iR] || '').match(/\d+/) : null;
-      const n = Math.max(1, Math.min(20, parseInt(c[iSets], 10) || 1));
-      const rest = iRest >= 0 ? parseInt(c[iRest], 10) : NaN;
-      push(c[iName], sanitize(w, 'w'), rm ? rm[0] : '', n, rest);
-    }
-  } else {
-    for (const line of lines) {
-      const m = line.match(/^\s*[-*]\s*(.+)$/);
-      if (!m) continue;
-      const p = m[1].split('|').map(x => x.trim());
-      const rm = String(p[2] || '').match(/\d+/);
-      push(p[0], '', rm ? rm[0] : '', Math.max(1, Math.min(20, parseInt(p[1], 10) || 1)), parseInt(p[3], 10));
+  if (hi === -1) return out;
+  const head = splitRow(lines[hi]).map(h => h.toLowerCase());
+  const iName = pickCol(head, ['exercise', '動作', '項目']);
+  const iW = pickCol(head, ['weight', '重量', 'kg']);
+  const iR = pickCol(head, ['reps', '次', '秒']);
+  const iSets = head.findIndex(h => /^sets?\b/.test(h) || h.includes('組數') || h === '組');
+  const iRest = pickCol(head, ['rest', '休息']);
+  const iNote = pickCol(head, ['note', '備註']);
+  const headSec = iR >= 0 && /秒|sec/.test(head[iR]);
+  for (let i = hi + 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line.startsWith('|')) { if (out.length) break; continue; }
+    const c = splitRow(line);
+    if (isSepRow(c)) continue;
+    const name = String(c[iName] || '').trim();
+    if (!name || name === '-') continue;
+    let w = iW >= 0 ? (c[iW] || '') : '';
+    if (!w && iNote >= 0) { const m = (c[iNote] || '').match(/([\d.]+)\s*kg/i); if (m) w = m[1]; }
+    const rCell = iR >= 0 ? c[iR] : '';
+    const rest = iRest >= 0 ? parseInt(c[iRest], 10) : NaN;
+    const ex = getEx(out, name);
+    if (Number.isFinite(rest)) ex.rest = rest;
+    if (headSec || /秒|\ds\b/i.test(rCell)) ex.unit = 'sec';
+    for (let k = 0, n = clampSets(c[iSets]); k < n; k++) ex.sets.push({ w: sanitize(w, 'w'), r: firstInt(rCell) });
+  }
+  return out;
+}
+// "## Exercise" headings each followed by a set table (FuGym Obsidian notes and similar).
+function parseSectionTables(text) {
+  const out = [];
+  let name = null, head = null;
+  for (const raw of String(text).split(/\r?\n/)) {
+    const line = raw.trim();
+    const h = line.match(/^#{2,6}\s+(.+)$/);
+    if (h) { name = h[1].replace(/\[\[([^\]|]+)(?:\|[^\]]*)?\]\]/g, '$1').trim(); head = null; continue; }
+    if (!line.startsWith('|')) { head = null; continue; }
+    if (!name) continue;
+    const c = splitRow(line);
+    if (!head) { head = c.map(x => x.toLowerCase()); continue; }
+    if (isSepRow(c)) continue;
+    const iW = pickCol(head, ['weight', '重量', 'kg']);
+    const iR = pickCol(head, ['reps', '次', '秒', 'sec']);
+    if (iW < 0 && iR < 0) continue;
+    const iN = head.findIndex(x => /^sets?\b/.test(x) || x.includes('組數'));
+    const ex = getEx(out, name);
+    if (iR >= 0 && /秒|sec/.test(head[iR])) ex.unit = 'sec';
+    for (let k = 0, n = iN >= 0 ? clampSets(c[iN]) : 1; k < n; k++) {
+      ex.sets.push({ w: iW >= 0 ? sanitize(c[iW], 'w') : '', r: iR >= 0 ? firstInt(c[iR]) : '' });
     }
   }
   return out;
 }
-function importText(text) {
-  const plan = parsePlan(text);
-  if (!plan.length) { toast('讀不到任何項目，請確認表格格式'); return false; }
-  for (const e of plan) {
-    S.workout.exercises.push({ id: uid(), name: e.name, rest: e.rest ?? (S.restPrefs[e.name] ?? null), sets: e.sets.map(s => mkSet(s.w, s.r)) });
-    if (!BUILTIN.has(norm(e.name)) && !S.custom.some(c => norm(c.name) === norm(e.name))) S.custom.push({ name: e.name, cat: '自訂' });
+function parseMarkdownDoc(text) {
+  const fm = text.match(/^\s*---\s*\r?\n([\s\S]*?)\r?\n---/);
+  let date = '', dur = 0;
+  if (fm) {
+    const d = fm[1].match(/^date:\s*["']?(\d{4}[-/.]\d{1,2}[-/.]\d{1,2})/m); if (d) date = normDate(d[1]);
+    const m = fm[1].match(/^duration_min:\s*(\d+)/m); if (m) dur = +m[1] * 60;
   }
-  if (S.workout.finishedAt) S.workout.finishedAt = null;
-  save(); renderAll();
-  toast(`已匯入 ${plan.length} 個項目`);
-  return true;
+  if (!date) date = normDate((text.match(/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/) || [''])[0]);
+  let exercises = parseExerciseTable(text);
+  if (!exercises.length) exercises = parseSectionTables(text);
+  if (!exercises.length) return [];
+  const s = newImported(date);
+  s.exercises = exercises;
+  return [finishImported(s, dur)];
+}
+function csvRows(text) {
+  const first = text.split(/\r?\n/, 1)[0];
+  const delim = (first.match(/\t/g) || []).length > (first.match(/,/g) || []).length ? '\t' : ',';
+  const rows = []; let row = [], field = '', q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else q = false; }
+      else field += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === delim) { row.push(field); field = ''; }
+    else if (ch === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+    else if (ch !== '\r') field += ch;
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows.filter(r => r.some(x => x.trim()));
+}
+// FuGym CSV, the old Trainer CSV, or any sheet with date / exercise / weight / reps columns.
+function parseCSV(text) {
+  const rows = csvRows(text);
+  if (rows.length < 2) return [];
+  const head = rows[0].map(h => h.trim().toLowerCase());
+  const iDate = pickCol(head, ['date', '日期']);
+  const iEx = pickCol(head, ['exercise', '動作', '項目']);
+  const iW = pickCol(head, ['weight', '重量', 'kg']);
+  const iR = pickCol(head, ['actual_reps', 'reps', '次數', '秒數', '次']);
+  const iUnit = pickCol(head, ['unit', '單位']);
+  const iAt = pickCol(head, ['completed', 'done_at', '完成時間']);
+  const iGap = pickCol(head, ['since_prev', 'interval', 'rest_seconds']);
+  const iSess = pickCol(head, ['session', '場次']);
+  const iSets = head.findIndex(h => h === 'sets' || h === '組數');
+  if (iEx < 0) return [];
+  const groups = new Map();
+  for (const c of rows.slice(1)) {
+    const name = String(c[iEx] || '').trim();
+    if (!name) continue;
+    const rawDate = iDate >= 0 ? c[iDate] : '';
+    const date = normDate(rawDate) || todayISO();
+    const sid = iSess >= 0 ? String(c[iSess] || '').trim() : '';
+    const key = sid ? `s:${sid}` : `d:${date}`;
+    let g = groups.get(key);
+    if (!g) { g = newImported(date); g.id = sid || null; groups.set(key, g); }
+    const ex = getEx(g.exercises, name);
+    const at = parseStamp(iAt >= 0 ? c[iAt] : '') ?? (/T\d/.test(rawDate) ? parseStamp(rawDate) : null);
+    const gapRaw = iGap >= 0 ? String(c[iGap] || '').trim() : '';
+    const gap = gapRaw && !isNaN(+gapRaw) ? +gapRaw : null;
+    if (/sec|秒/i.test(iUnit >= 0 ? c[iUnit] : '') || (iR >= 0 && /秒/.test(head[iR]))) ex.unit = 'sec';
+    for (let k = 0, n = iSets >= 0 ? clampSets(c[iSets]) : 1; k < n; k++) {
+      ex.sets.push({ w: sanitize(iW >= 0 ? c[iW] : '', 'w'), r: firstInt(iR >= 0 ? c[iR] : ''), doneAt: at, gap });
+    }
+    if (at) { g.startedAt = Math.min(g.startedAt ?? at, at); g.finishedAt = Math.max(g.finishedAt ?? at, at); }
+  }
+  return [...groups.values()].map(g => finishImported(g, 0));
+}
+// One set line, e.g. "100 kg × 5 次 × 3 組", "100x5x3", "60 秒 × 3 組", "8 次".
+function matchSet(line) {
+  const t = line.replace(/[×xX＊*]/g, ' x ').replace(/公斤/g, 'kg').replace(/\s+/g, ' ').trim();
+  const U = '(次|下|秒|s|sec|reps?)';
+  const N = '(?:\\s*x\\s*(\\d+)\\s*(?:組|sets?)?)?';
+  let m;
+  if ((m = t.match(new RegExp(`^([\\d.]+)\\s*kg\\s*x\\s*(\\d+)\\s*${U}?${N}$`, 'i')))) return { w: m[1], r: m[2], sec: /秒|^s/i.test(m[3] || ''), n: m[4] };
+  if ((m = t.match(new RegExp(`^([\\d.]+)\\s*x\\s*(\\d+)\\s*${U}?${N}$`, 'i')))) return { w: m[1], r: m[2], sec: /秒|^s/i.test(m[3] || ''), n: m[4] };
+  if ((m = t.match(new RegExp(`^(\\d+)\\s*${U}${N}$`, 'i')))) return { w: '', r: m[1], sec: /秒|^s/i.test(m[2]), n: m[3] };
+  if ((m = t.match(/^([\d.]+)\s*kg(?:\s*x\s*(\d+)\s*(?:組|sets?))?$/i))) return { w: m[1], r: '', sec: false, n: m[2] };
+  if ((m = t.match(/^完成(?:\s*x\s*(\d+)\s*組)?$/))) return { w: '', r: '', sec: false, n: m[1] };
+  return null;
+}
+function parseDurText(line) {
+  let m = line.match(/(\d+)\s*小時\s*(\d+)\s*分/);
+  if (m) return +m[1] * 3600 + +m[2] * 60;
+  m = line.match(/(\d+)\s*分/);
+  return m ? +m[1] * 60 : 0;
+}
+// FuGym text log, or hand-written notes ("槓鈴深蹲" then "100x5x3", or "槓鈴深蹲 100kg×5×3").
+function parseText(text) {
+  const sessions = [];
+  let cur = null, ex = null, dur = 0;
+  const close = () => { if (cur) finishImported(cur, dur); };
+  const open = date => { close(); cur = newImported(date); sessions.push(cur); ex = null; dur = 0; };
+  const addSets = (target, st) => {
+    if (st.sec) target.unit = 'sec';
+    for (let k = 0, n = st.n ? clampSets(st.n) : 1; k < n; k++) target.sets.push({ w: sanitize(st.w, 'w'), r: st.r });
+  };
+  for (const raw of String(text).split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || /^[─━—=_\-~*]{3,}$/.test(line)) continue;
+    const dm = line.match(/\d{4}[-/.]\d{1,2}[-/.]\d{1,2}/);
+    if (dm && !matchSet(line)) { open(normDate(dm[0])); continue; }
+    if (/總量|訓練時間/.test(line)) { const d = parseDurText(line); if (d) dur = d; continue; }
+    const body = line.replace(/^(?:\d+[.、)）](?!\d)|[•●▪◦・\-+])\s*/, '');
+    const st = matchSet(body);
+    if (st) {
+      if (!cur) open('');
+      if (!ex) ex = getEx(cur.exercises, '未命名項目');
+      addSets(ex, st);
+      continue;
+    }
+    const inl = body.match(/^(.*?[^\d\s.:：])[\s:：]+([\d.]+.*)$/);
+    const st2 = inl && matchSet(inl[2]);
+    if (st2) {
+      if (!cur) open('');
+      ex = getEx(cur.exercises, inl[1].trim());
+      addSets(ex, st2);
+      continue;
+    }
+    if (body.length <= 40 && /\D/.test(body)) {
+      if (!cur) open('');
+      ex = getEx(cur.exercises, body);
+    }
+  }
+  close();
+  return sessions.filter(s => s.exercises.length);
+}
+function parseImport(text) {
+  const t = String(text || '').replace(/^﻿/, '').trim();
+  if (!t) return null;
+  if (t[0] === '{') {
+    try {
+      const d = JSON.parse(t);
+      const data = d && (d.data || d);
+      if (data && Array.isArray(data.sessions)) return { kind: 'backup', data, exportedAt: d.exportedAt || null };
+    } catch (e) {}
+    return { kind: 'error', msg: '這不是 FuGym 的備份檔，或檔案已損毀。' };
+  }
+  const first = t.split(/\r?\n/, 1)[0];
+  const sortS = list => list.sort((a, b) => a.date < b.date ? -1 : a.date > b.date ? 1 : (a.startedAt || 0) - (b.startedAt || 0));
+  if (!first.trim().startsWith('|') && /[,\t]/.test(first) && /(exercise|動作|項目)/i.test(first)) {
+    return { kind: 'sessions', format: 'CSV', badge: 'CSV', sessions: sortS(parseCSV(t)) };
+  }
+  if (/^\s*\|/m.test(t)) {
+    const list = parseMarkdownDoc(t);
+    if (list.length) {
+      const obs = /^type:\s*workout/m.test(t) || /^#{2,}\s/m.test(t);
+      return { kind: 'sessions', format: obs ? 'Obsidian 筆記' : 'Markdown', badge: obs ? 'OBS' : 'MD', sessions: list };
+    }
+  }
+  return { kind: 'sessions', format: '文字紀錄', badge: 'TXT', sessions: sortS(parseText(t)) };
+}
+
+/* ---------- Import: apply ---------- */
+function sessionSig(s) {
+  return `${s.date}|${s.exercises.map(e => `${norm(e.name)}:${e.sets.map(x => `${x.w}x${x.r}`).join(',')}`).join(';')}`;
+}
+function isDupSession(s) {
+  const sig = sessionSig(s);
+  return S.sessions.some(x => (s.id && x.id === s.id) || sessionSig(x) === sig);
+}
+function registerNames(exercises) {
+  for (const e of exercises) {
+    if (!BUILTIN.has(norm(e.name)) && !S.custom.some(c => norm(c.name) === norm(e.name))) S.custom.push({ name: e.name, cat: '自訂' });
+    if (e.unit === 'sec' && unitOf(e.name) !== 'sec') S.units[norm(e.name)] = 'sec';
+  }
+}
+function undoToast(msg, snap) {
+  toast(msg, { action: '復原', ms: 6000, fn: () => { S = normalize(JSON.parse(snap)); save(); renderAll(); syncWakeLock(); } });
+}
+function importSessions(list) {
+  const snap = JSON.stringify(S);
+  let added = 0, skipped = 0;
+  for (const s of list) {
+    if (!s.exercises.length) continue;
+    if (isDupSession(s)) { skipped++; continue; }
+    const id = s.id && s.id !== S.workout.id && !S.sessions.some(x => x.id === s.id) ? String(s.id) : uid();
+    S.sessions.push({
+      id, date: s.date, startedAt: s.startedAt || null, finishedAt: s.finishedAt || null,
+      exercises: s.exercises.map(e => ({ name: e.name, rest: e.rest ?? null, sets: e.sets.map(x => ({ w: String(x.w ?? ''), r: String(x.r ?? ''), doneAt: x.doneAt ?? null, gap: x.gap ?? null })) })),
+    });
+    registerNames(s.exercises);
+    added++;
+  }
+  sortSessions(); save(); renderAll();
+  undoToast(`已匯入 ${added} 次訓練${skipped ? `，略過 ${skipped} 筆重複` : ''}`, snap);
+}
+function mergeBackup(data) {
+  const snap = JSON.stringify(S);
+  const inc = normalize(data);
+  let added = 0, skipped = 0;
+  for (const s of inc.sessions) {
+    if (isDupSession(s)) { skipped++; continue; }
+    S.sessions.push(s.id === S.workout.id || !s.id ? Object.assign({}, s, { id: uid() }) : s);
+    added++;
+  }
+  for (const c of inc.custom) if (!S.custom.some(x => norm(x.name) === norm(c.name))) S.custom.push(c);
+  S.restPrefs = Object.assign({}, inc.restPrefs, S.restPrefs);
+  S.units = Object.assign({}, inc.units, S.units);
+  sortSessions(); save(); renderAll();
+  undoToast(`已合併 ${added} 次訓練${skipped ? `，略過 ${skipped} 筆重複` : ''}`, snap);
+}
+function replaceAll(data) {
+  const snap = JSON.stringify(S);
+  S = normalize(data);
+  S.timer = null;
+  closeFocus();
+  save(); renderAll(); syncWakeLock();
+  undoToast('已用備份取代所有資料', snap);
+}
+function importAsPlan(s) {
+  registerNames(s.exercises);
+  planFrom(s);
+}
+
+/* ---------- Import: sheet ---------- */
+const imp = { parsed: null, dest: 'history' };
+function openImport() {
+  imp.parsed = null; imp.dest = 'history';
+  openSheet({
+    title: '匯入紀錄',
+    sub: '把過去的訓練加入歷史，或當作今天的計畫',
+    cls: 'tall',
+    body: `
+      <textarea class="field" id="importText" spellcheck="false" placeholder="在這裡貼上內容，或選擇／拖曳檔案"></textarea>
+      <label class="btn soft block" style="margin-top:10px">${ic('upload')}選擇檔案…<input type="file" id="importFile" accept=".md,.markdown,.txt,.csv,.tsv,.json,text/plain,text/markdown,text/csv,application/json" hidden /></label>
+      <div id="importPreview"></div>`,
+    foot: '<button class="btn primary block lg" data-act="import-run" id="importRun" disabled>匯入</button>',
+  });
+  const ta = $('#importText');
+  let timer = null;
+  const analyze = () => { imp.parsed = parseImport(ta.value); renderImportPreview(); };
+  const readFile = file => { const r = new FileReader(); r.onload = () => { ta.value = String(r.result || ''); analyze(); }; r.readAsText(file); };
+  ta.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(analyze, 180); });
+  $('#importFile').addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); });
+  const sheet = $('#layer .sheet');
+  sheet.addEventListener('dragover', e => { e.preventDefault(); ta.style.boxShadow = 'inset 0 0 0 2px var(--accent)'; });
+  sheet.addEventListener('dragleave', () => { ta.style.boxShadow = ''; });
+  sheet.addEventListener('drop', e => {
+    e.preventDefault(); ta.style.boxShadow = '';
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) readFile(f);
+    else { ta.value = e.dataTransfer.getData('text/plain') || ta.value; analyze(); }
+  });
+  renderImportPreview();
+}
+function renderImportPreview() {
+  const box = $('#importPreview'), btn = $('#importRun');
+  if (!box || !btn) return;
+  const p = imp.parsed;
+  btn.classList.remove('danger-fill');
+  const help = `
+    <div class="section-label">支援的格式</div>
+    <div class="fmt-help">${[
+      ['CSV', 'FuGym 匯出的 CSV，或含「日期、項目、重量、次數」欄位的試算表'],
+      ['MD', 'FuGym 部落格／Obsidian 筆記，或含 Exercise 欄位的 Markdown 表格'],
+      ['TXT', 'FuGym 文字紀錄，或手寫筆記，例如「槓鈴深蹲 100kg × 5 × 3」'],
+      ['JSON', 'FuGym 完整備份檔'],
+    ].map(([b, t]) => `<div><span class="fmt-badge sm">${b}</span><span>${t}</span></div>`).join('')}</div>`;
+  if (!p) { box.innerHTML = help; btn.disabled = true; btn.textContent = '匯入'; return; }
+  if (p.kind === 'error' || (p.kind === 'sessions' && !p.sessions.length)) {
+    box.innerHTML = `<div class="imp-card warn"><b>讀不到任何訓練紀錄</b><span>${esc(p.msg || '請確認內容格式，可參考下方支援的格式。')}</span></div>${help}`;
+    btn.disabled = true; btn.textContent = '匯入';
+    return;
+  }
+  if (p.kind === 'backup') {
+    if (imp.dest !== 'replace') imp.dest = 'merge';
+    const d = p.data;
+    const when = p.exportedAt && !isNaN(Date.parse(p.exportedAt)) ? ` · 備份於 ${localStamp(Date.parse(p.exportedAt)).slice(0, 16)}` : '';
+    box.innerHTML = `
+      <div class="imp-card"><span class="fmt-badge">JSON</span><div><b>FuGym 完整備份</b><span>${(d.sessions || []).length} 次訓練 · ${(d.custom || []).length} 個自訂項目${when}</span></div></div>
+      <div class="section-label">匯入方式</div>
+      <div class="chips">
+        <button class="chip ${imp.dest === 'merge' ? 'on' : ''}" data-act="imp-dest" data-dest="merge">合併到現有資料</button>
+        <button class="chip ${imp.dest === 'replace' ? 'on' : ''}" data-act="imp-dest" data-dest="replace">取代所有資料</button>
+      </div>
+      <p class="hint">${imp.dest === 'replace' ? '目前的歷史紀錄、今日清單與設定都會換成備份的內容。匯入後可以按「復原」。' : '只加入目前沒有的訓練紀錄與自訂項目，重複的會自動略過。'}</p>`;
+    btn.disabled = false;
+    btn.textContent = imp.dest === 'replace' ? '取代所有資料' : '合併備份';
+    btn.classList.toggle('danger-fill', imp.dest === 'replace');
+    return;
+  }
+  if (imp.dest !== 'plan') imp.dest = 'history';
+  const list = p.sessions;
+  const sets = list.reduce((a, s) => a + s.exercises.reduce((b, e) => b + e.sets.length, 0), 0);
+  const dups = list.filter(isDupSession).length;
+  const first = list[0].date, last = list[list.length - 1];
+  const shown = list.slice(-6).reverse();
+  box.innerHTML = `
+    <div class="imp-card"><span class="fmt-badge">${p.badge}</span><div><b>${esc(p.format)} · ${list.length} 次訓練</b><span>${first === last.date ? esc(fmtDate(first)) : `${first} ～ ${last.date}`} · 共 ${sets} 組</span></div></div>
+    <div class="imp-list">${shown.map(s => `
+      <div><b>${esc(fmtDate(s.date))}</b><span>${esc(s.exercises.map(e => `${e.name} ×${e.sets.length}`).join('、'))}</span>${isDupSession(s) ? '<em class="tag">已存在</em>' : ''}</div>`).join('')}
+      ${list.length > shown.length ? `<div class="muted">…還有 ${list.length - shown.length} 次</div>` : ''}
+    </div>
+    <div class="section-label">匯入到</div>
+    <div class="chips">
+      <button class="chip ${imp.dest === 'history' ? 'on' : ''}" data-act="imp-dest" data-dest="history">訓練歷史</button>
+      <button class="chip ${imp.dest === 'plan' ? 'on' : ''}" data-act="imp-dest" data-dest="plan">今日計畫</button>
+    </div>
+    <p class="hint">${imp.dest === 'plan'
+      ? `把${list.length > 1 ? `最後一次（${esc(fmtDate(last.date))}）` : '這次'}的項目、重量和次數加到今日清單。`
+      : dups ? `其中 ${dups} 次已經在訓練歷史中，會自動略過。` : '加入訓練歷史後，下次新增同樣的項目會自動帶入這些重量與次數。'}</p>`;
+  if (imp.dest === 'plan') {
+    btn.disabled = false;
+    btn.textContent = `加入今日清單（${last.exercises.length} 個項目）`;
+  } else {
+    const n = list.length - dups;
+    btn.disabled = !n;
+    btn.textContent = n ? `匯入 ${n} 次訓練` : '沒有新的紀錄';
+  }
+}
+function runImport() {
+  const p = imp.parsed;
+  if (!p || p.kind === 'error') return;
+  closeSheet();
+  if (p.kind === 'backup') { if (imp.dest === 'replace') replaceAll(p.data); else mergeBackup(p.data); }
+  else if (imp.dest === 'plan') importAsPlan(p.sessions[p.sessions.length - 1]);
+  else importSessions(p.sessions);
 }
 
 /* ---------- Rendering: main page ---------- */
@@ -1115,12 +1667,14 @@ function renderEmpty() {
       <button class="btn primary lg" data-act="open-picker">${ic('plus')}選擇項目</button>
       ${last ? `<button class="btn" data-act="repeat-last">${ic('repeat')}重複上次訓練 · ${esc(relDay(last.date))} · ${last.exercises.length} 項</button>` : ''}
       ${others > 1 ? `<button class="btn soft" data-act="history">${ic('history')}從歷史紀錄挑選</button>` : ''}
-      <button class="btn soft" data-act="import">${ic('upload')}匯入 Markdown 計畫</button>
+      <button class="btn soft" data-act="import">${ic('upload')}匯入紀錄或計畫</button>
     </div>`;
 }
 function exerciseHTML(ex, i, target) {
   const last = lastPerf(ex.name);
   const rest = restOf(ex);
+  const unit = unitOf(ex.name), sec = unit === 'sec';
+  const wPh = isBw(ex.name) ? '自重' : 'kg';
   const complete = ex.sets.length > 0 && ex.sets.every(s => s.done);
   const rows = ex.sets.map((s, idx) => {
     const ph = placeholderFor(ex, s);
@@ -1129,9 +1683,9 @@ function exerciseHTML(ex, i, target) {
     return `
       <div class="set-row${s.done ? ' done' : ''}${isNext ? ' next' : ''}" data-set="${s.id}">
         <button class="set-no num" data-act="set-menu" aria-label="第 ${idx + 1} 組選項">${idx + 1}</button>
-        <button class="set-prev" data-act="use-prev" ${prev ? '' : 'disabled'} aria-label="套用上次數值">${prev ? esc(setText(prev.w, prev.r)) : '—'}</button>
-        <input class="set-in" data-field="w" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="${esc(s.w)}" placeholder="${esc(ph.w || 'kg')}" aria-label="第 ${idx + 1} 組重量（公斤）" />
-        <input class="set-in" data-field="r" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="next" value="${esc(s.r)}" placeholder="${esc(ph.r || '次')}" aria-label="第 ${idx + 1} 組次數" />
+        <button class="set-prev" data-act="use-prev" ${prev ? '' : 'disabled'} aria-label="套用上次數值">${prev ? esc(setText(prev.w, prev.r, unit)) : '—'}</button>
+        <input class="set-in" data-field="w" type="text" inputmode="decimal" autocomplete="off" enterkeyhint="next" value="${esc(s.w)}" placeholder="${esc(ph.w || wPh)}" aria-label="第 ${idx + 1} 組重量（公斤）" />
+        <input class="set-in" data-field="r" type="text" inputmode="numeric" autocomplete="off" enterkeyhint="next" value="${esc(s.r)}" placeholder="${esc(ph.r || (sec ? '秒' : '次'))}" aria-label="第 ${idx + 1} 組${sec ? '秒數' : '次數'}" />
         <button class="check" data-act="toggle" aria-pressed="${s.done}" aria-label="${s.done ? '取消完成' : '完成'}第 ${idx + 1} 組">${ic('check')}</button>
       </div>`;
   }).join('');
@@ -1149,7 +1703,7 @@ function exerciseHTML(ex, i, target) {
         </button>
         <button class="icon-btn" data-act="ex-menu" aria-label="${esc(ex.name)} 選項">${ic('more')}</button>
       </div>
-      ${ex.sets.length ? `<div class="set-head"><span>組</span><span>上次</span><span>kg</span><span>次數</span><span>完成</span></div>${rows}` : '<div class="no-sets">還沒有組數</div>'}
+      ${ex.sets.length ? `<div class="set-head"><span>組</span><span>上次</span><span>kg</span><span>${sec ? '秒數' : '次數'}</span><span>完成</span></div>${rows}` : '<div class="no-sets">還沒有組數</div>'}
       <button class="add-set" data-act="add-set">${ic('plus')}新增一組</button>
     </article>`;
 }
@@ -1300,14 +1854,12 @@ function openMenu() {
       <div class="menu">
         ${live ? item('finish', 'flag', '結束訓練', '儲存今天完成的組數') : ''}
         ${w.finishedAt ? item('summary', 'list', '查看訓練總結') : ''}
-        ${item('history', 'history', '訓練歷史', '把以前的訓練帶入今日清單')}
-        ${item('import', 'upload', '匯入 Markdown 計畫')}
+        ${item('history', 'history', '訓練歷史', `${S.sessions.filter(x => x.id !== w.id).length} 次 · 查看、帶入、匯出或刪除`)}
       </div>
-      <div class="section-label">匯出</div>
+      <div class="section-label">資料</div>
       <div class="menu">
-        ${item('copy-md', 'copy', '複製 Markdown', '部落格筆記格式')}
-        ${item('share-md', 'share', '分享 Markdown')}
-        ${item('csv', 'download', '下載 CSV 紀錄', '每一組的重量、次數與完成時間')}
+        ${item('export', 'download', '匯出', 'Obsidian、部落格 Markdown、文字紀錄、CSV、完整備份')}
+        ${item('import', 'upload', '匯入紀錄', 'CSV、Markdown／Obsidian、文字紀錄、備份檔')}
       </div>
       <div class="section-label">其他</div>
       <div class="menu">
@@ -1324,7 +1876,7 @@ function openSettings() {
     body: `
       <div class="section-label">預設組間休息</div>
       <div class="chips">${REST_OPTIONS.filter(x => x).map(sec => `<button class="chip ${sec === s.rest ? 'on' : ''}" data-act="settings-rest" data-sec="${sec}">${fmtRest(sec)}</button>`).join('')}</div>
-      <p class="hint">每個項目也能在項目選單中個別設定休息時間。</p>
+      <p class="hint">內建的 30 個動作會用各自的建議休息時間；每個項目也能在項目選單中個別調整。</p>
       <div class="section-label">重量加減級距</div>
       <div class="chips">${STEP_OPTIONS.map(v => `<button class="chip ${v === s.step ? 'on' : ''}" data-act="settings-step" data-v="${v}">${v} kg</button>`).join('')}</div>
       <div class="section-label">提示</div>
@@ -1345,6 +1897,11 @@ function openExMenu(exId) {
     body: `
       <div class="section-label">組間休息</div>
       <div class="chips">${opts.map(sec => `<button class="chip ${sec === rest ? 'on' : ''}" data-act="set-rest" data-sec="${sec}">${sec ? fmtRest(sec) : '不計時'}</button>`).join('')}</div>
+      <div class="section-label">計量方式</div>
+      <div class="chips">
+        <button class="chip ${unitOf(ex.name) !== 'sec' ? 'on' : ''}" data-act="set-unit" data-unit="reps">次數</button>
+        <button class="chip ${unitOf(ex.name) === 'sec' ? 'on' : ''}" data-act="set-unit" data-unit="sec">秒數（棒式等靜態動作）</button>
+      </div>
       <div class="section-label">項目</div>
       <div class="menu">
         <button class="menu-item" data-act="ex-rename">${ic('edit')}<span>重新命名</span></button>
@@ -1390,45 +1947,48 @@ function openSetMenu(exId, setId) {
   });
 }
 function openHistory() {
-  const list = S.sessions.filter(s => s.id !== S.workout.id).slice().reverse();
+  const list = S.sessions.filter(x => x.id !== S.workout.id).slice().reverse();
   openSheet({
     title: '訓練歷史',
     sub: list.length ? `共 ${list.length} 次訓練` : '',
     cls: list.length > 4 ? 'tall' : '',
-    body: list.length ? list.map(s => {
-      const st = sessionStats(s);
-      const dur = s.startedAt && s.finishedAt && s.finishedAt > s.startedAt ? ` · ${fmtDur((s.finishedAt - s.startedAt) / 1000)}` : '';
+    body: list.length ? list.map(x => {
+      const st = sessionStats(x), dur = sessionDur(x);
       return `
-        <div class="hist">
-          <b>${esc(fmtDate(s.date))} <span class="muted" style="font-weight:600">· ${esc(relDay(s.date))}</span></b>
-          <div class="hist-names">${esc(s.exercises.map(e => e.name).join('、'))}</div>
-          <div class="hist-meta num">${st.sets} 組 · ${fmtVol(st.vol)} kg${dur}</div>
-          <button class="btn sm" data-act="use-session" data-id="${esc(s.id)}">帶入</button>
-        </div>`;
-    }).join('') : '<p class="pick-empty">還沒有歷史紀錄。<br>完成第一組訓練後就會出現在這裡。</p>',
+        <button class="hist" data-act="session-open" data-id="${esc(x.id)}">
+          <b>${esc(fmtDate(x.date))} <span class="muted" style="font-weight:600">· ${esc(relDay(x.date))}</span></b>
+          <span class="hist-names">${esc(x.exercises.map(e => e.name).join('、'))}</span>
+          <span class="hist-meta num">${st.sets} 組 · ${fmtVol(st.vol)} kg${dur ? ` · ${fmtDur(dur)}` : ''}</span>
+          ${ic('right')}
+        </button>`;
+    }).join('') : `<p class="pick-empty">還沒有歷史紀錄。<br>完成第一組訓練，或從選單「匯入紀錄」。</p>`,
+    foot: list.length ? '' : `<button class="btn soft block" data-act="import">${ic('upload')}匯入紀錄</button>`,
   });
 }
-function openImport() {
+function openSessionDetail(id) {
+  const x = S.sessions.find(v => v.id === id);
+  if (!x) return;
+  const st = sessionStats(x), dur = sessionDur(x);
   openSheet({
-    title: '匯入 Markdown 計畫',
-    sub: '支援 FuGym 匯出的筆記，或任何含 Exercise / Sets / Reps 欄位的表格',
-    body: `
-      <textarea class="field" id="importText" placeholder="| Exercise | Weight (kg) | Reps per Set | Sets |\n| --- | --- | --- | --- |\n| 槓鈴深蹲 | 80 | 5 | 5 |"></textarea>
-      <label class="btn soft block" style="margin-top:10px">${ic('upload')}選擇檔案…<input type="file" id="importFile" accept=".md,.markdown,.txt,text/markdown,text/plain" hidden /></label>
-      <p class="hint">也可以直接把 .md 檔拖曳到這裡。項目會加到今日清單的最後面。</p>`,
-    foot: `<button class="btn primary block" data-act="import-load">加入今日清單</button>`,
+    title: fmtDate(x.date),
+    sub: [relDay(x.date), `${st.sets} 組`, `${fmtVol(st.vol)} kg`, dur ? fmtDur(dur) : ''].filter(Boolean).join(' · '),
+    cls: x.exercises.length > 3 ? 'tall' : '',
+    attrs: `data-sid="${esc(x.id)}"`,
+    body: x.exercises.map(e => `<div class="sum-ex"><b>${esc(e.name)}</b><div class="sum-sets">${e.sets.map(v => `<span>${esc(setText(v.w, v.r, unitOf(e.name)))}</span>`).join('')}</div></div>`).join(''),
+    foot: `
+      <button class="btn soft danger" data-act="session-delete">${ic('trash')}刪除</button>
+      <button class="btn soft" data-act="session-export">${ic('download')}匯出</button>
+      <button class="btn primary" data-act="session-use" style="flex-basis:100%">${ic('repeat')}帶入今日計畫</button>`,
   });
-  const ta = $('#importText');
-  const readFile = file => { const r = new FileReader(); r.onload = () => { ta.value = r.result; }; r.readAsText(file); };
-  $('#importFile').addEventListener('change', e => { if (e.target.files[0]) readFile(e.target.files[0]); });
-  const sheet = $('#layer .sheet');
-  sheet.addEventListener('dragover', e => { e.preventDefault(); ta.style.boxShadow = 'inset 0 0 0 2px var(--accent)'; });
-  sheet.addEventListener('dragleave', () => { ta.style.boxShadow = ''; });
-  sheet.addEventListener('drop', e => {
-    e.preventDefault(); ta.style.boxShadow = '';
-    const f = e.dataTransfer.files && e.dataTransfer.files[0];
-    if (f) readFile(f); else ta.value = e.dataTransfer.getData('text/plain') || ta.value;
-  });
+}
+function deleteSession(id) {
+  const x = S.sessions.find(v => v.id === id);
+  if (!x) return;
+  const snap = JSON.stringify(S);
+  S.sessions = S.sessions.filter(v => v.id !== id);
+  save(); renderAll();
+  closeSheet();
+  undoToast(`已刪除 ${fmtDate(x.date)} 的紀錄`, snap);
 }
 function openSummary() {
   const w = S.workout, st = stats();
@@ -1445,12 +2005,11 @@ function openSummary() {
         <div class="sum-card"><b class="num">${st.done}</b><span>完成組數</span></div>
         <div class="sum-card"><b class="num">${exs.length}</b><span>項目</span></div>
       </div>
-      ${exs.map(e => `<div class="sum-ex"><b>${esc(e.name)}</b><div class="sum-sets">${e.sets.map(s => `<span>${esc(setText(s.w, s.r))}</span>`).join('')}</div></div>`).join('')}`,
+      ${exs.map(e => `<div class="sum-ex"><b>${esc(e.name)}</b><div class="sum-sets">${e.sets.map(s => `<span>${esc(setText(s.w, s.r, unitOf(e.name)))}</span>`).join('')}</div></div>`).join('')}`,
     foot: `
-      <button class="btn soft" data-act="copy-md">${ic('copy')}複製 Markdown</button>
-      <button class="btn soft" data-act="share-md">${ic('share')}分享</button>
-      <button class="btn soft" data-act="csv">${ic('download')}CSV</button>
-      <button class="btn primary" data-act="new-workout">${ic('refresh')}開始新的訓練</button>`,
+      <button class="btn soft" data-act="copy-text">${ic('copy')}複製文字紀錄</button>
+      <button class="btn soft" data-act="export">${ic('download')}匯出…</button>
+      <button class="btn primary" data-act="new-workout" style="flex-basis:100%">${ic('refresh')}開始新的訓練</button>`,
   });
 }
 
@@ -1474,7 +2033,10 @@ function openPicker() {
 function pickRow(name, today) {
   const sel = picker.sel.includes(name);
   const last = lastPerf(name);
-  const sub = [catOf(name), last ? `上次 ${perfSummary(last.sets)} · ${relDay(last.date)}` : ''].filter(Boolean).join(' · ');
+  const p = presetOf(name);
+  const hint = last ? `上次 ${perfSummary(last.sets, unitOf(name))} · ${relDay(last.date)}`
+    : p ? `建議 ${p.sets} 組 × ${p.reps}${p.unit === 'sec' ? ' 秒' : ' 次'} · 休息 ${fmtRest(p.rest)}` : '';
+  const sub = [catOf(name), hint].filter(Boolean).join(' · ');
   return `
     <button class="pick-row${sel ? ' sel' : ''}" data-act="picker-toggle" data-name="${esc(name)}" aria-pressed="${sel}">
       <span class="pick-check">${ic('check')}</span>
@@ -1603,6 +2165,7 @@ function renderFocus() {
   const ph = set ? placeholderFor(ex, set) : { w: '', r: '' };
   const last = lastPerf(ex.name);
   const ls = set && last ? last.sets[setIdx] : null;
+  const unit = unitOf(ex.name), sec = unit === 'sec';
   const since = lastDoneAt() || w.startedAt;
 
   let center;
@@ -1656,20 +2219,20 @@ function renderFocus() {
             <div class="stepper-label">重量 kg</div>
             <div class="stepper-row">
               <button data-act="step" data-field="w" data-dir="-1" aria-label="減少重量">${ic('minus')}</button>
-              <input class="focus-in" data-field="w" type="text" inputmode="decimal" autocomplete="off" value="${esc(set.w)}" placeholder="${esc(ph.w || '0')}" aria-label="重量（公斤）" />
+              <input class="focus-in" data-field="w" type="text" inputmode="decimal" autocomplete="off" value="${esc(set.w)}" placeholder="${esc(ph.w || (isBw(ex.name) ? '自重' : '0'))}" aria-label="重量（公斤）" />
               <button data-act="step" data-field="w" data-dir="1" aria-label="增加重量">${ic('plus')}</button>
             </div>
           </div>
           <div class="stepper">
-            <div class="stepper-label">次數</div>
+            <div class="stepper-label">${sec ? '秒數' : '次數'}</div>
             <div class="stepper-row">
-              <button data-act="step" data-field="r" data-dir="-1" aria-label="減少次數">${ic('minus')}</button>
-              <input class="focus-in" data-field="r" type="text" inputmode="numeric" autocomplete="off" value="${esc(set.r)}" placeholder="${esc(ph.r || '0')}" aria-label="次數" />
-              <button data-act="step" data-field="r" data-dir="1" aria-label="增加次數">${ic('plus')}</button>
+              <button data-act="step" data-field="r" data-dir="-1" aria-label="減少${sec ? '秒數' : '次數'}">${ic('minus')}</button>
+              <input class="focus-in" data-field="r" type="text" inputmode="numeric" autocomplete="off" value="${esc(set.r)}" placeholder="${esc(ph.r || '0')}" aria-label="${sec ? '秒數' : '次數'}" />
+              <button data-act="step" data-field="r" data-dir="1" aria-label="增加${sec ? '秒數' : '次數'}">${ic('plus')}</button>
             </div>
           </div>
         </div>
-        <p class="focus-hint">${ls ? `上次這一組：${esc(setText(ls.w, ls.r))} · ${esc(relDay(last.date))}` : `組間休息 ${restOf(ex) ? fmtRest(restOf(ex)) : '不計時'}，可在項目選單調整`}</p>` : ''}
+        <p class="focus-hint">${ls ? `上次這一組：${esc(setText(ls.w, ls.r, unit))} · ${esc(relDay(last.date))}` : `組間休息 ${restOf(ex) ? fmtRest(restOf(ex)) : '不計時'}，可在項目選單調整`}</p>` : ''}
       <div class="focus-cta">${cta}</div>
     </div>`;
   if (resting) paintTimer(Date.now());
@@ -1691,7 +2254,7 @@ function step(field, dir) {
   if (!t || !t.set) return;
   const ph = placeholderFor(t.ex, t.set);
   const base = num(t.set[field] !== '' ? t.set[field] : ph[field]);
-  const inc = field === 'w' ? S.settings.step : 1;
+  const inc = field === 'w' ? S.settings.step : (unitOf(t.ex.name) === 'sec' ? 5 : 1);
   const next = Math.max(0, Math.round((base + dir * inc) * 100) / 100);
   t.set[field] = field === 'w' ? fmtW(next) : String(Math.round(next));
   haptic(6);
@@ -1706,17 +2269,37 @@ const ACTIONS = {
   'open-picker': () => openPicker(),
   'repeat-last': () => { const s = lastSession(); if (s) useSession(s.id); },
   'history': () => openHistory(),
-  'use-session': ({ el }) => { closeSheet(); useSession(el.dataset.id); },
   'import': () => openImport(),
-  'import-load': () => { if (importText($('#importText').value)) closeSheet(); },
+  'import-run': () => runImport(),
+  'imp-dest': ({ el }) => { imp.dest = el.dataset.dest; renderImportPreview(); },
+  'export': () => openExport('workout'),
+  'exp-fmt': ({ el }) => { exp.fmt = el.dataset.fmt; S.settings.exportFormat = exp.fmt; save(); renderExport(); },
+  'exp-scope': ({ el }) => { exp.scope = el.dataset.scope; if (exp.scope === 'all' && expFormat().single) exp.fmt = 'text'; renderExport(); },
+  'exp-copy': async () => { const t = buildExport(); if (t) toast(await copyText(t) ? '已複製到剪貼簿' : '複製失敗，請改用下載'); },
+  'exp-share': () => { const f = expFormat(), t = buildExport(); if (t) shareFile(t, exportFilename(), f.mime, 'FuGym', f.asText); },
+  'exp-download': () => {
+    const f = expFormat(); let t = buildExport();
+    if (!t) return;
+    if (f.id === 'csv') t = '\uFEFF' + t; // BOM so Excel reads Chinese correctly
+    download(t, exportFilename(), `${f.mime};charset=utf-8`);
+    toast(`已下載 ${exportFilename()}`);
+  },
+  'copy-text': async () => { const t = toText([workoutAsSession()]); toast(await copyText(t) ? '文字紀錄已複製' : '複製失敗'); },
+  'session-open': ({ el }) => openSessionDetail(el.dataset.id),
+  'session-use': ({ el }) => { const id = el.closest('[data-sid]').dataset.sid; closeSheet(); useSession(id); },
+  'session-export': ({ el }) => openExport(el.closest('[data-sid]').dataset.sid),
+  'session-delete': ({ el }) => deleteSession(el.closest('[data-sid]').dataset.sid),
+  'set-unit': ({ exId, el }) => {
+    const ex = findEx(exId); if (!ex) return;
+    S.units[norm(ex.name)] = el.dataset.unit;
+    save(); renderAll();
+    $$('[data-act="set-unit"]').forEach(c => c.classList.toggle('on', c === el));
+  },
   'menu': () => openMenu(),
   'settings': () => openSettings(),
   'settings-rest': ({ el }) => { S.settings.rest = +el.dataset.sec; save(); renderAll(); $$('[data-act="settings-rest"]').forEach(c => c.classList.toggle('on', c === el)); },
   'settings-step': ({ el }) => { S.settings.step = +el.dataset.v; save(); $$('[data-act="settings-step"]').forEach(c => c.classList.toggle('on', c === el)); },
   'clear-today': () => { closeSheet(); newWorkout(); },
-  'copy-md': () => doCopyMd(),
-  'share-md': () => doShareMd(),
-  'csv': () => doCsv(),
   'sheet-close': () => closeSheet(),
   'ex-menu': ({ exId }) => openExMenu(exId),
   'ex-rename': ({ exId }) => openRename(exId),
@@ -1806,6 +2389,7 @@ document.addEventListener('change', e => {
   if (el.matches('.switch[data-setting]')) {
     S.settings[el.dataset.setting] = el.checked;
     save(); syncWakeLock();
+    if (el.dataset.setting === 'obsLinks') renderExport();
   } else if (el.id === 'dateInput') {
     if (el.value) { S.workout.date = el.value; save(); renderAll(); }
   }
